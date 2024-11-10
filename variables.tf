@@ -1,18 +1,18 @@
 # VPC Variables
-variable "vpc_cidr" {
+variable "vpc-cidr" {
   description = "CIDR block for VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
 
 # Subnets Variables
-variable "pub_subnet_cidrs" {
+variable "pub-subnet-cidrs" {
   description = "CIDR blocks for pub subnets"
   type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "pvt_subnet_cidrs" {
+variable "pvt-subnet-cidrs" {
   description = "CIDR blocks for pvt subnets"
   type        = list(string)
   default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
@@ -36,45 +36,41 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "allowed_ingress_cidr" {
+variable "allowed-ingress-cidr" {
   description = "CIDR block allowed for ingress to sec grp"
   type        = string
   default     = "0.0.0.0/0"
 }
 
-variable "" {
-  
-}
-
 # Elastic Container Repo Variables
-variable "ecr_repo_name" {
+variable "ecr-repo-name" {
   description = "Name of the ECR repository"
   type        = string
-  default     = "nov4_ecs_ecr"
+  default     = "ce7-g2-webapp"
 }
 
 # Elastic Container Service Variables
 
 # Application Load Balancer Variables
-variable "alb_name" {
+variable "alb-name" {
   description = "Name of ALB"
   type        = string
-  default     = "nov4-ap-alb"
+  default     = "ce7-g2-alb"
 }
 
-variable "alb_listener_port" {
+variable "alb-listener-port" {
   description = "Port for ALB Listener"
   type        = number
   default     = 80
 }
 
-variable "alb_target_port" {
+variable "alb-target-port" {
   description = "Port for ALB target group"
   type        = number
   default     = 80
 }
 
-variable "alb_protocol" {
+variable "alb-protocol" {
   description = "Protocol for ALB listener and target group"
   type        = string
   default     = "HTTP"

@@ -1,36 +1,48 @@
 # Output Configuration - Displays key resource information after deployment
 
-output "vpc_id" {
-  # Outputs the VPC ID
-  value = aws_vpc.main_vpc.id
+output "vpc-id" {
+  # Outputs the VPC Name and ID
+  value = {
+    name = aws_vpc.main-vpc.tags["Name"]
+    id   = aws_vpc.main-vpc.id
+  }
 }
 
-output "pubsub_ids" {
+output "pubsub-ids" {
   # Outputs the IDs of the public subnets created
-  value = aws_subnet.pub_subnets[*].id
+  value = {
+    for subnet in aws_subnet.pub-subnets : subnet.tags["Name"] => subnet.id
+  }
 }
-
-output "pvtsub_ids" {
+output "pvtsub-ids" {
   # Outputs the IDs of the private subnets created
-  value = aws_subnet.pvt_subnets[*].id
+  value = {
+    for subnet in aws_subnet.pvt-subnets : subnet.tags["Name"] => subnet.id
+  }
 }
 
-output "ecs_sg_id" {
+output "ecs-sg-id" {
   # Outputs the ID of the ECS security group
-  value = aws_security_group.ecs_sg.id
+  value = {
+    name = aws_security_group.ecs-sg.tags["Name"]
+    id   = aws_security_group.ecs-sg.id
+  }
 }
 
-output "ecr_repository_url" {
+output "ecr-repository-url" {
   # Outputs the URL of the ECR repository created for ECS container images
-  value = aws_ecr_repository.nov4_ecs_ecr.id
+  value = {
+    name = aws_ecr_repository.ce7-g2-webapp.tags["Name"]
+    id   = aws_ecr_repository.ce7-g2-webapp.id
+  }
 }
 
-output "alb_dns_name" {
+output "alb-dns-name" {
   # Outputs the DNS name of the ALB
-  value = aws_alb.nov4_alb.dns_name
+  value = aws_alb.ce7-g2-alb.dns_name
 }
 
-output "alb_target_group_arn" {
+output "alb-target-group-arn" {
   # Outputs the ARN of the ALB target group
-  value = aws_lb_target_group.nov4_targrp.arn
+  value = aws_lb_target_group.ce7-g2-targrp.arn
 }
