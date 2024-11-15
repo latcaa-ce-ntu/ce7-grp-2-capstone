@@ -6,7 +6,7 @@ variable "ecr_repo_name" {
 }
 
 variable "ecs_security_group_id" {
-  description = "The ID of the security group created for the ALB"
+  description = "The ID of the security group created for the ECS tasks"
   type        = string
 }
 

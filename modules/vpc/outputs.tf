@@ -1,6 +1,4 @@
-# Outputs for modules
 output "vpc_id" {
-  # Outputs the VPC Name and ID
   value = aws_vpc.main_vpc.id
 }
 

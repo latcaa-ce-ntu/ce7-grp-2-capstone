@@ -1,19 +1,11 @@
-# Create an Application Load Balancer (ALB)
+# Application Load Balancer (ALB)
 resource "aws_alb" "ce7_g2_alb" {
   name               = var.alb_name
   internal           = false
   load_balancer_type = "application"
-
-  # Attach the ECS security group to the ALB for access control
   security_groups = var.security_group_ids
+  subnets = var.public_subnet_ids
 
-  # Specify the subnets the ALB will be associated ith (pub)
-  subnets         = var.public_subnet_ids
-
-  # Associate the ALB with the VPC
-  # vpc_id          = var.vpc_id
-
-  # Tags for the ALB, useful for identification and management
   tags = {
     Name = var.alb_name
   }
@@ -24,7 +16,6 @@ data "aws_alb" "ce7_g2_alb_data" {
   name = aws_alb.ce7_g2_alb.name
 }
 
-# Define a listener for the ALB to handle incoming traffic
 resource "aws_lb_listener" "ce7_g2_listener" {
   load_balancer_arn = aws_alb.ce7_g2_alb.arn
   port              = var.alb_listener_port
@@ -46,14 +37,11 @@ resource "aws_lb_target_group" "ce7_g2_targrp" {
   target_type = "ip"
   vpc_id      = var.vpc_id
 
-  # Health check configuration to monitor the health of targets
   health_check {
     interval = 30
 
     # Path for health check requests
     path = "/"
-
-    # Protocol for health checks (matches the listener protocol)
     protocol            = var.alb_protocol
     timeout             = 5
     healthy_threshold   = 2

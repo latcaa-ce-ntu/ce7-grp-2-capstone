@@ -12,7 +12,7 @@ variable "ecr_repository_url" {
 
 variable "target_group_arn" {
   description = "ARN of the target group"
-  type = string
+  type        = string
 }
 
 variable "subnet_ids" {
@@ -22,5 +22,5 @@ variable "subnet_ids" {
 
 variable "alb_security_group_id" {
   description = "Security Group ID of the ALB"
-  type = string
+  type        = string
 }

@@ -1,16 +1,9 @@
 # Public Subnet Configuration
 resource "aws_subnet" "pub_subnets" {
-  # The count parameter allows for creating multiple public subnets
   count  = length(var.pub_subnet_cidrs)
   vpc_id = aws_vpc.main_vpc.id
-
-  # CIDR block for the public subnet, based on the input variable
   cidr_block = var.pub_subnet_cidrs[count.index]
-
-  # Public IP addresses assignment to subnet
   map_public_ip_on_launch = true
-
-  # Availability zone for the subnet, selected from the input variable
   availability_zone = var.pub_azs[count.index]
 
   tags = {
@@ -39,18 +32,12 @@ resource "aws_route_table_association" "pub_RT_assoc" {
 }
 
 # Private Subnet Configuration
-resource "aws_subnet" "pvt-subnets" {
-  # The count parameter allows for creating multiple private subnets
+resource "aws_subnet" "pvt_subnets" {
   count  = length(var.pvt_subnet_cidrs)
   vpc_id = aws_vpc.main_vpc.id
-
-  # CIDR block for the private subnet, based on the input variable
   cidr_block = var.pvt_subnet_cidrs[count.index]
-
-  # Availability zone for the subnet, selected from the input variable
   availability_zone = var.pvt_azs[count.index]
 
-  # Tags to identify the private subnet
   tags = {
     Name = "ce7_g2_pvtsub_${count.index + 1}"
   }
