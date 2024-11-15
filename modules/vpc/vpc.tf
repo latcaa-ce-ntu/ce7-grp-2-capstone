@@ -1,24 +1,25 @@
 # VPC and Internet Gateway Configuration - Sets up the primary networking infrastructure
 
-resource "aws_vpc" "main-vpc" {
-  cidr_block           = var.vpc-cidr
+resource "aws_vpc" "main_vpc" {
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "ce7-g2-main-vpc"
+    Name = "ce7_g2_main_vpc"
   }
 }
 
 resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main-vpc.id
+  vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "ce7-g2-igw"
+    Name = "ce7_g2_igw"
   }
 }
 
-data "aws_vpc" "main-vpc" {
+data "aws_vpc" "main_vpc" {
   # Retrieves the details of the created VPC using its ID
-  id = aws_vpc.main-vpc.id
+  id = aws_vpc.main_vpc.id
 }
+

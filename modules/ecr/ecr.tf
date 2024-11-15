@@ -1,6 +1,6 @@
 # Create an Elastic Container Registry (ECR) repository to store Docker images
-resource "aws_ecr_repository" "ce7-g2-webapp" {
-  name = var.ecr-repo-name
+resource "aws_ecr_repository" "ce7_g2_webapp" {
+  name = var.ecr_repo_name
 
   # Allowing/Disallow image tags to be overwritten
   image_tag_mutability = "MUTABLE"
@@ -11,11 +11,11 @@ resource "aws_ecr_repository" "ce7-g2-webapp" {
   }
 
   tags = {
-    Name = var.ecr-repo-name
+    Name = var.ecr_repo_name
   }
 }
 
 # Data source to retrieve the details of the ECR repository created above
-data "aws_ecr_repository" "ce7-g2-webapp-data" {
-  name = aws_ecr_repository.ce7-g2-webapp.name
+data "aws_ecr_repository" "ce7_g2_webapp_data" {
+  name = aws_ecr_repository.ce7_g2_webapp.name
 }
