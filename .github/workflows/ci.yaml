@@ -9,9 +9,9 @@ on:
       - "terraform/*"
 
 permissions:
-  id-token: write
-  contents: read
-  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
   Terraform-Checks:
