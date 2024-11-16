@@ -92,7 +92,7 @@ jobs:
 
       - name: Terraform workspace new environment and select
         run: |
-          terraform workspace select ${{ github.base_ref }} -or-create=true
+          terraform -or-create=true workspace select ${{ github.base_ref }}
           terraform workspace list
 
       - name: Terraform Plan
