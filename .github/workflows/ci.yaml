@@ -102,13 +102,19 @@ jobs:
       - name: Update Pull Request
         if: always()
         uses: actions/github-script@v7
+        env:
+          PLAN: ${{ steps.plan.outputs.stdout }}
+          FMT_OUTCOME: ${{ needs.Terraform-Checks.steps.fmt.outcome }}
+          INIT_OUTCOME: ${{ needs.Terraform-Checks.steps.init.outcome }}
+          VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.steps.validate.outputs.stdout }}
+          LINT_OUTCOME: ${{ needs.Terraform-Checks.steps.lint.outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ needs.Terraform-Checks.steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ needs.Terraform-Checks.steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ needs.Terraform-Checks.steps.validate.outputs.stdout }}\`
-            #### Terraform Lint 🧹\`${{ needs.Terraform-Checks.steps.lint.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${process.env.FMT_OUTCOME}\`
+            #### Terraform Initialization ⚙️\`${process.env.INIT_OUTCOME}\`
+            #### Terraform Validation 🤖\`${process.env.VALIDATE_OUTPUTS_STDOUT}\`
+            #### Terraform Lint 🧹\`${process.env.LINT_OUTCOME}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
