@@ -59,13 +59,6 @@ jobs:
         id: tflint
         run: tflint -f compact
 
-  # get-id-token:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - run: |
-  #         ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
-  #         echo $ID_TOKEN | base64
-
   Terraform-Plan:
     needs: [Terraform-Checks]
     runs-on: ubuntu-latest
@@ -119,7 +112,7 @@ jobs:
           script: |
             const output = `#### Terraform Format and Style 🖌\`${process.env.FMT_OUTCOME}\`
             #### Terraform Initialization ⚙️\`${process.env.INIT_OUTCOME}\`
-            #### Terraform Validation 🤖\`${process.env.VALIDATE_OUTPUTS_STDOUT}\`
+            #### Terraform Validation 🤖${process.env.VALIDATE_OUTPUTS_STDOUT}
             #### Terraform Lint 🧹\`${process.env.TFLINT_OUTCOME}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
