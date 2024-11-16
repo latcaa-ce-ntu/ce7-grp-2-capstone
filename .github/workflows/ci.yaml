@@ -82,7 +82,7 @@ jobs:
           # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
           audience: sts.amazonaws.com
-          role-to-assume: arn:aws:iam::255945442255:role/ce7-grp-2-github-oidc-role
+          role-to-assume: arn:aws:iam::255945442255:role/ce7-grp-2-oidc-role
 
       - name: Terraform Init
         run: terraform init
