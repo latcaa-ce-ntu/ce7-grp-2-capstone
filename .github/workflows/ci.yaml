@@ -53,6 +53,13 @@ jobs:
         id: lint
         run: tflint -f compact
 
+  get-id-token:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
+          echo $ID_TOKEN | base64
+
   Terraform-Plan:
     needs: [Terraform-Checks]
     runs-on: ubuntu-latest
