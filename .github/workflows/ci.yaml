@@ -98,10 +98,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outputs.stdout }}\`
-            #### Terraform Lint 🧹\`${{ steps.lint.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ needs.Terraform-Checks.steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ needs.Terraform-Checks.steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ needs.Terraform-Checks.steps.validate.outputs.stdout }}\`
+            #### Terraform Lint 🧹\`${{ needs.Terraform-Checks.steps.lint.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
