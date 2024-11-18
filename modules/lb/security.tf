@@ -1,5 +1,5 @@
-resource "aws_security_group" "alb_sg" {
-  name_prefix = "ce7-g2-alb-sg"
+resource "aws_security_group" "lb_sg" {
+  name_prefix = "ce7-grp-2-lb-sg"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -17,6 +17,6 @@ resource "aws_security_group" "alb_sg" {
   }
 
   tags = {
-    Name = "ce7_g2_alb_sg"
+    Name = "ce7_grp_2_lb_sg"
   }
 }

@@ -1,5 +1,5 @@
-resource "aws_security_group" "ecs_sg" {
-  name_prefix = "ce7-g2-ecs-sg"
+resource "aws_security_group" "eks_cluster_sg" {
+  name_prefix = "ce7-grp-2-eks-cluster-sg"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -17,6 +17,6 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   tags = {
-    Name = "ce7_g2_ecs_sg"
+    Name = "ce7_grp_2_eks_cluster_sg"
   }
 }

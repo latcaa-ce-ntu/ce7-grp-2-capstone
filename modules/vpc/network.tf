@@ -7,7 +7,7 @@ resource "aws_subnet" "pub_subnets" {
   availability_zone = var.pub_azs[count.index]
 
   tags = {
-    Name = "ce7_g2_pubsubnet_${count.index + 1}"
+    Name = "ce7_grp_2_pubsubnet_${count.index + 1}"
   }
 }
 
@@ -20,7 +20,7 @@ resource "aws_route_table" "pub_RT" {
   }
 
   tags = {
-    Name = "ce7_g2_routetable"
+    Name = "ce7_grp_2_routetable"
   }
 }
 
@@ -39,12 +39,12 @@ resource "aws_subnet" "pvt_subnets" {
   availability_zone = var.pvt_azs[count.index]
 
   tags = {
-    Name = "ce7_g2_pvtsub_${count.index + 1}"
+    Name = "ce7_grp_2_pvtsub_${count.index + 1}"
   }
 }
 
 # Security Group for ECS Tasks/Services
-resource "aws_security_group" "ecs_sg" {
+resource "aws_security_group" "eks_sg" {
   vpc_id = aws_vpc.main_vpc.id
 
   ingress {
@@ -62,6 +62,6 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   tags = {
-    Name = "ce7_g2_ecs_sg"
+    Name = "ce7_grp_2_eks_sg"
   }
 }

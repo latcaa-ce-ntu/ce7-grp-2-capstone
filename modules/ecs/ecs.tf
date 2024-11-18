@@ -57,33 +57,33 @@ resource "aws_ecs_service" "ce7_g2_ecs_svc" {
   # Load balancer configuration for the ECS service
   load_balancer {
     # Target group ARN for routing traffic to the containers
-    target_group_arn = aws_lb_target_group.ce7_g2_targrp.arn
+    target_group_arn = module.lb.aws_lb_target_group.ce7_g2_targrp.arn
     container_name   = "ce7_g2_ecs_container"
     container_port   = 80
   }
 }
 
-resource "aws_lb_target_group" "ce7_g2_targrp" {
-  name        = "ce7-g2-target-group"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = var.vpc_id
-  target_type = "ip"
+# resource "aws_lb_target_group" "ce7_g2_targrp" {
+#   name        = "ce7-g2-target-group"
+#   port        = 80
+#   protocol    = "HTTP"
+#   vpc_id      = var.vpc_id
+#   target_type = "ip"
 
-  health_check {
-    path                = "/"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    matcher             = "200"
-  }
-}
+#   health_check {
+#     path                = "/"
+#     interval            = 30
+#     timeout             = 5
+#     healthy_threshold   = 2
+#     unhealthy_threshold = 2
+#     matcher             = "200"
+#   }
+# }
 
-resource "aws_lb" "ce7_g2_alb" {
-  name               = "ce7-g2-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.ecs_sg.id]
-  subnets            = var.subnet_ids
-}
+# resource "aws_lb" "ce7_g2_alb" {
+#   name               = "ce7-g2-alb"
+#   internal           = false
+#   load_balancer_type = "application"
+#   security_groups    = [aws_security_group.ecs_sg.id]
+#   subnets            = var.subnet_ids
+# }

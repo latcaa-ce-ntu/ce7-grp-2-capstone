@@ -1,23 +1,23 @@
-variable "alb_name" {
-  description = "Name of ALB"
+variable "lb_name" {
+  description = "Name of LB"
   type        = string
-  default     = "ce7_g2_alb"
+  default     = "ce7_grp_2_lb"
 }
 
-variable "alb_listener_port" {
-  description = "Port for ALB Listener"
+variable "lb_listener_port" {
+  description = "Port for LB Listener"
   type        = number
   default     = 80
 }
 
-variable "alb_target_port" {
-  description = "Port for ALB target group"
+variable "lb_target_port" {
+  description = "Port for LB target group"
   type        = number
   default     = 80
 }
 
-variable "alb_protocol" {
-  description = "Protocol for ALB listener and target group"
+variable "lb_protocol" {
+  description = "Protocol for LB listener and target group"
   type        = string
   default     = "HTTP"
 }
@@ -32,6 +32,6 @@ variable "public_subnet_ids" {
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC to associate with ALB"
+  description = "ID of the VPC to associate with LB"
   type        = string
 }

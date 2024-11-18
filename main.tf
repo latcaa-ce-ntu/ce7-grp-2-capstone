@@ -14,32 +14,40 @@ module "vpc" {
 }
 
 # ALB Module
-module "alb" {
-  source             = "./modules/alb"
-  alb_name           = "ce7-g2-alb"
+module "lb" {
+  source             = "./modules/lb"
+  lb_name            = "ce7-grp-2-lb"
   vpc_id             = module.vpc.vpc_id
   public_subnet_ids  = module.vpc.public_subnet_ids
-  security_group_ids = [module.vpc.ecs_security_group_id]
-  alb_listener_port  = 80
-  alb_protocol       = "HTTP"
-  alb_target_port    = 80
+  security_group_ids = [module.vpc.eks_security_group_id]
+  lb_listener_port   = 80
+  lb_protocol        = "HTTP"
+  lb_target_port     = 80
 }
 
 # ECR Module
 module "ecr" {
-  source                = "./modules/ecr"
-  ecr_repo_name         = "ce7-g2-webapp"
-  ecs_security_group_id = module.ecs.ecs_security_group_id
-  target_group_arn      = module.alb.target_group_arn
-  ecr_repository_url    = module.ecr.repository_url
+  source             = "./modules/ecr"
+  ecr_repo_name      = "ce7-grp-2-webapp"
+  ecr_repository_url = module.ecr.repository_url
+  # target_group_arn      = module.lb.target_group_arn
+  # ecs_security_group    =
 }
 
-module "ecs" {
-  source                = "./modules/ecs"
-  vpc_id                = module.vpc.vpc_id
-  subnet_ids            = module.vpc.public_subnet_ids
-  alb_security_group_id = module.alb.security_group_id
-  target_group_arn      = module.alb.target_group_arn
-  ecr_repository_url    = module.ecr.repository_url
-  ecs_security_group_id = module.ecs.ecs_security_group_id
+module "eks" {
+  source               = "./modules/eks"
+  vpc_id               = module.vpc.vpc_id
+  subnet_ids           = concat(module.vpc.public_subnet_ids, module.vpc.private_subnet_ids)
+  lb_security_group_id = module.lb.security_group_id
+  ecr_repository_url   = module.ecr.repository_url
 }
+
+# module "ecs" {
+#   source                = "./modules/ecs"
+#   vpc_id                = module.vpc.vpc_id
+#   subnet_ids            = module.vpc.public_subnet_ids
+#   lb_security_group_id  = module.lb.security_group_id
+#   target_group_arn      = module.lb.target_group_arn
+#   ecr_repository_url    = module.ecr.repository_url
+#   ecs_security_group_id = module.ecs.ecs_security_group_id
+# }

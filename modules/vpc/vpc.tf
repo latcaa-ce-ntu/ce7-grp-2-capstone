@@ -12,7 +12,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "ce7_g2_igw"
+    Name = "ce7_grp_2_igw"
   }
 }
 
