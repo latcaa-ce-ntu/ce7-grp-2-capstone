@@ -3,6 +3,13 @@ variable "name_prefix" {
   type        = string
   default     = "ce7-grp-2"
 }
+
+# variable "ecr_repo_name" {
+#   description = "ECR Repository Name"
+#   type        = string
+#   default     = "ecrtest"
+# }
+
 # variable "ecs_cluster_name" {
 #   description = "ECS Cluster Name"
 #   type        = string

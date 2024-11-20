@@ -1,0 +1,22 @@
+{
+  "name": "simple-node-application",
+  "version": "1.0.0",
+  "description": "my simple node application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RaytraceSG/simple-node-application.git"
+  },
+  "author": "Azmi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RaytraceSG/simple-node-application/issues"
+  },
+  "homepage": "https://github.com/RaytraceSG/simple-node-application#readme",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

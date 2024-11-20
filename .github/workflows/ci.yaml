@@ -7,6 +7,7 @@ on:
       - "*"
     paths:
       - "terraform/*"
+      - "files/*"
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -19,6 +20,7 @@ jobs:
 
     defaults:
       run:
+        shell: bash
         working-directory: terraform
 
     outputs:
@@ -58,6 +60,90 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: tflint -f compact
+
+  Docker-Checks:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        id: docker-build
+        run: docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+
+  Snyk-Code-Scan:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk Code Scan And Check Snyk Scan Results
+        run: snyk code test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  Snyk-IAC-Scan:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk Code Scan And Check Snyk Scan Results
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: "--report --severity-threshold=high --scan=resource-changes"
+
+  Snyk-Container-Scan:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          args: --file=Dockerfile
 
   Terraform-Plan:
     needs: [Terraform-Checks]
