@@ -17,6 +17,7 @@ permissions:
 jobs:
   Terraform-Checks:
     if: ${{ contains(github.event.pull_request.changed_files, 'terraform/') }}
+    # if: ${{ github.event.push.changes.*.filename | join(' ') | contains('terraform/') }}
     runs-on: ubuntu-latest
 
     defaults:

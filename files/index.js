@@ -30,7 +30,7 @@ app.get("/test", (req, res) => {
 
 app.get("/welcome", (req, res) => {
   res.statusCode = 200;
-  const msg = "Hello from /welcome ce7-grp-2!";
+  const msg = "Hello from /welcome ce7-grp-2!!";
   res.send(msg);
 });
 
