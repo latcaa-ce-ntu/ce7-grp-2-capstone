@@ -141,7 +141,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: "${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
-          args: --file=Dockerfile
+          # args: --file=Dockerfile
 
   Terraform-Plan:
     needs: [Terraform-Checks]
