@@ -78,7 +78,7 @@ jobs:
 
       - name: Build an image from Dockerfile
         id: docker-build
-        run: docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+        run: docker build -t ${{ vars.ECR_REPOSITORY }}:${{ github.sha }} .
 
   Snyk-Code-Scan:
     runs-on: ubuntu-latest
@@ -142,7 +142,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          image: "${{ vars.ECR_REPOSITORY }}:${{ github.sha }}"
           args: --file=Dockerfile
 
   Terraform-Plan:
