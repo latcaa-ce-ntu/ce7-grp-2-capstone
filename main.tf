@@ -35,11 +35,13 @@ module "ecr" {
 }
 
 module "eks" {
-  source               = "./modules/eks"
-  vpc_id               = module.vpc.vpc_id
-  subnet_ids           = concat(module.vpc.public_subnet_ids, module.vpc.private_subnet_ids)
-  lb_security_group_id = module.lb.security_group_id
-  ecr_repository_url   = module.ecr.repository_url
+  source             = "./modules/eks"
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  private_subnet_ids = module.vpc.private_subnet_ids
+  subnet_ids         = concat(module.vpc.public_subnet_ids, module.vpc.private_subnet_ids)
+  ecr_repository_url = module.ecr.repository_url
+  # lb_security_group_id = module.lb.security_group_id
 }
 
 # module "ecs" {

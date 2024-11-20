@@ -7,9 +7,14 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-variable "lb_security_group_id" {
-  description = "Security Group ID of the LB"
-  type        = string
+variable "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  type        = list(string)
+}
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs"
+  type        = list(string)
 }
 
 variable "ecr_repository_url" {
