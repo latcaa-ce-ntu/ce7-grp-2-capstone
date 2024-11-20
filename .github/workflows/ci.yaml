@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   Terraform-Checks:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'terraform/') }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -62,6 +63,7 @@ jobs:
         run: tflint -f compact
 
   Docker-Checks:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'files/') }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -78,12 +80,12 @@ jobs:
         run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
 
   Snyk-Code-Scan:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'files/') }}
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: files
 
     steps:
       - name: Checkout
@@ -98,6 +100,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Snyk-IAC-Scan:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'files/') }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -120,6 +123,7 @@ jobs:
           args: "--report --severity-threshold=high --scan=resource-changes"
 
   Snyk-Container-Scan:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'files/') }}
     needs: Docker-Checks
     runs-on: ubuntu-latest
 
@@ -144,6 +148,7 @@ jobs:
           # args: --file=Dockerfile
 
   Terraform-Plan:
+    if: ${{ github.event.pull_request.changed_files > 0 && contains(github.event.pull_request.changed_files, 'terraform/') }}
     needs: [Terraform-Checks]
     runs-on: ubuntu-latest
 
