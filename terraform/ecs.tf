@@ -56,7 +56,7 @@ resource "aws_ecs_service" "hello_world" {
   network_configuration {
     subnets          = module.vpc.public_subnets # Replace with your subnet IDs
     assign_public_ip = true
-    security_groups  = [aws_security_group.azmi1-tf-sg-allow-ssh-http-https.id]
+    security_groups  = [aws_security_group.sg-allow-ssh-http-https.id]
   }
 
   load_balancer {
