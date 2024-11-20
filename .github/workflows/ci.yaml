@@ -120,6 +120,7 @@ jobs:
           args: "--report --severity-threshold=high --scan=resource-changes"
 
   Snyk-Container-Scan:
+    needs: Docker-Checks
     runs-on: ubuntu-latest
 
     defaults:
