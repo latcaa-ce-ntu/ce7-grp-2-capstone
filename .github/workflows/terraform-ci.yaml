@@ -60,51 +60,51 @@ jobs:
         id: tflint
         run: tflint -f compact
 
-  # Snyk-IAC-Scan:
-  #   runs-on: ubuntu-latest
+  Snyk-IAC-Scan:
+    runs-on: ubuntu-latest
 
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: terraform
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform
 
-  #   outputs:
-  #     snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
+    outputs:
+      snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Install Snyk CLI
-  #       run: npm install -g snyk
+      - name: Install Snyk CLI
+        run: npm install -g snyk
 
-  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
-  #       id: snyk_iac
-  #       uses: snyk/actions/iac@master
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #       with:
-  #         args: "--report --severity-threshold=high --scan=resource-changes"
+      # - name: Run Snyk Code Scan And Check Snyk Scan Results
+      #   id: snyk_iac
+      #   uses: snyk/actions/iac@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: "--report --severity-threshold=high --scan=resource-changes"
 
-  # Checkov:
-  #   runs-on: ubuntu-latest
+  Checkov:
+    runs-on: ubuntu-latest
 
-  #   defaults:
-  #     run:
-  #       working-directory: terraform
+    defaults:
+      run:
+        working-directory: terraform
 
-  #   outputs:
-  #     checkov_outcome: ${{ steps.checkov.outcome }}
+    outputs:
+      checkov_outcome: ${{ steps.checkov.outcome }}
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Checkov
-  #       id: checkov
-  #       uses: bridgecrewio/checkov-action@master
-  #       with:
-  #         framework: terraform
+      # - name: Checkov
+      #   id: checkov
+      #   uses: bridgecrewio/checkov-action@master
+      #   with:
+      #     framework: terraform
 
   Terraform-Plan:
     needs: [Terraform-Checks, Snyk-IAC-Scan, Checkov]
