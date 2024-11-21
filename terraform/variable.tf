@@ -4,6 +4,12 @@ variable "name_prefix" {
   default     = "ce7-grp-2"
 }
 
+variable "region" {
+  description = "Prefix to be added to resource names"
+  type        = string
+  default     = "us-east-1"
+}
+
 # variable "ecr_repo_name" {
 #   description = "ECR Repository Name"
 #   type        = string
