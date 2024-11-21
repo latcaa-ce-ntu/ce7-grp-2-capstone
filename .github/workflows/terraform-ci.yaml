@@ -69,7 +69,7 @@ jobs:
         working-directory: terraform
 
     outputs:
-      snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
+      # snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
 
     steps:
       - name: Checkout
@@ -94,7 +94,7 @@ jobs:
         working-directory: terraform
 
     outputs:
-      checkov_outcome: ${{ steps.checkov.outcome }}
+      # checkov_outcome: ${{ steps.checkov.outcome }}
 
     steps:
       - name: Checkout
@@ -163,7 +163,7 @@ jobs:
           INIT_OUTCOME: ${{ needs.Terraform-Checks.outputs.init_outcome }}
           VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.outputs.validate_outcome }}
           TFLINT_OUTCOME: ${{ needs.Terraform-Checks.outputs.tflint_outcome }}
-          SNYK_IAC_OUTCOME: ${{ needs.Snyk-IAC-Scan.outputs.snyk_iac_outcome }}
+          # SNYK_IAC_OUTCOME: ${{ needs.Snyk-IAC-Scan.outputs.snyk_iac_outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
