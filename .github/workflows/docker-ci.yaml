@@ -112,7 +112,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  Docker-Build:
+  Docker-Build-and-Scan:
     needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
     runs-on: ubuntu-latest
 
@@ -151,6 +151,14 @@ jobs:
       #   steps:
       #     - name: Checkout
       #       uses: actions/checkout@v4
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Verify jq Installation
+        run: |
+          jq --version
 
       - name: Install Snyk CLI
         run: npm install -g snyk
