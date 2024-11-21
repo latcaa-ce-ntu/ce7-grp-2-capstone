@@ -1,29 +1,11 @@
-const request = require("supertest");
-const express = require("express");
-
-// Import the app from your main file (adjust the path as necessary)
-const app = require("../app"); // Change this to the path of your main app file
+import request from "supertest";
+import { expect } from "chai"; // Import expect from Chai
+import app from "../app.js"; // Ensure the correct path and extension
 
 describe("GET /", () => {
-  it("should return Hello from ce7-grp-2!", (done) => {
-    request(app).get("/").expect(200).expect("Hello from ce7-grp-2!", done);
-  });
-});
-
-describe("GET /test", () => {
-  it("should return Hello from /test ce7-grp-2!", (done) => {
-    request(app)
-      .get("/test")
-      .expect(200)
-      .expect("Hello from /test ce7-grp-2!", done);
-  });
-});
-
-describe("GET /welcome", () => {
-  it("should return Hello from /welcome ce7-grp-2!!", (done) => {
-    request(app)
-      .get("/welcome")
-      .expect(200)
-      .expect("Hello from /welcome ce7-grp-2!!", done);
+  it("should return Hello, World!", async () => {
+    const res = await request(app).get("/");
+    expect(res.statusCode).to.equal(200); // Use Chai's expect
+    expect(res.text).to.equal("Hello, World!"); // Use Chai's expect
   });
 });

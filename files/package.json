@@ -1,8 +1,9 @@
 {
-  "name": "simple-node-application",
+  "name": "simple-node-hello-world",
   "version": "1.0.0",
-  "description": "my simple node application",
-  "main": "index.js",
+  "description": "A simple Node.js Hello World application",
+  "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "node app.js",
     "test": "mocha"
@@ -11,17 +12,14 @@
     "type": "git",
     "url": "git+https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone.git"
   },
-  "author": "Azmi",
+  "author": "ce7-grp-2",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone/issues"
-  },
-  "homepage": "https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone#readme",
   "dependencies": {
-    "express": "^4.21.0"
+    "express": "^4.21.1"
   },
   "devDependencies": {
-    "mocha": "^11.0.0",
-    "supertest": "^7.0.0"
+    "chai": "^5.1.2",
+    "mocha": "^10.8.2",
+    "supertest": "^6.3.4"
   }
 }
