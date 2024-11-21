@@ -34,5 +34,15 @@ app.get("/welcome", (req, res) => {
   res.send(msg);
 });
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+// app.listen(PORT, HOST);
+// console.log(`Running on http://${HOST}:${PORT}`);
+
+// Export the app for testing
+module.exports = app;
+
+// Start the server only if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, HOST, () => {
+    console.log(`Running on http://${HOST}:${PORT}`);
+  });
+}

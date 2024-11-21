@@ -2,7 +2,7 @@ const request = require("supertest");
 const express = require("express");
 
 // Import the app from your main file (adjust the path as necessary)
-const app = require("../index"); // Change this to the path of your main app file
+const app = require("../app"); // Change this to the path of your main app file
 
 describe("GET /", () => {
   it("should return Hello from ce7-grp-2!", (done) => {

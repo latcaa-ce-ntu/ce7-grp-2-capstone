@@ -64,7 +64,7 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: Snyk-Code-Scan
+    needs: [Snyk-Code-Scan, Code-Unit-Testing]
     runs-on: ubuntu-latest
 
     defaults:
