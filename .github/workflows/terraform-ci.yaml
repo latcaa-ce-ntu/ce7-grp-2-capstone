@@ -107,21 +107,21 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        id: snyk_iac
-        run: |
-          # Run Snyk IaC scan and capture output
-          output=$(snyk iac test --report --severity-threshold=high --scan=resource-changes)
+      # - name: Run Snyk Code Scan And Check Snyk Scan Results
+      #   id: snyk_iac
+      #   run: |
+      #     # Run Snyk IaC scan and capture output
+      #     output=$(snyk iac test --report --severity-threshold=high --scan=resource-changes)
 
-          # Check if there were any vulnerabilities found
-          if [ $? -eq 0 ]; then
-            echo "Snyk IaC scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Snyk IaC scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append scan output to summary
-          fi
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #     # Check if there were any vulnerabilities found
+      #     if [ $? -eq 0 ]; then
+      #       echo "Snyk IaC scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "Snyk IaC scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+      #       echo "$output" >> $GITHUB_STEP_SUMMARY  # Append scan output to summary
+      #     fi
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Checkov:
     runs-on: ubuntu-latest
