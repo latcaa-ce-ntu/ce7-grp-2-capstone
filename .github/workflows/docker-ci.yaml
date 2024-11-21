@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "23-alpine"
+          node-version: "23"
 
       - name: Run installation of dependencies commands
         run: npm install
