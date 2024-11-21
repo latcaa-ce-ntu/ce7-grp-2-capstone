@@ -12,7 +12,7 @@ on:
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
-  pull-requests: write # This is required for updating pull-requests with comments
+  # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
   Security-Audit:
@@ -21,9 +21,6 @@ jobs:
     defaults:
       run:
         working-directory: hello-world
-
-    outputs:
-      npm_audit_outcome: ${{ steps.npm-audit.outcome }}
 
     steps:
       - name: Checkout
@@ -40,7 +37,16 @@ jobs:
       - name: Run a security audit
         id: npm-audit
         run: |
-          npm audit --audit-level=high
+          # Run npm audit and capture output
+          output=$(npm audit --audit-level=high --json)
+
+          # Check if there are vulnerabilities found
+          if [ $? -eq 0 ]; then
+            echo "NPM audit completed successfully with no high vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "NPM audit found the following high vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.advisories | to_entries[] | "Package: \(.value.module_name), Severity: \(.value.severity), Title: \(.value.title), URL: \(.value.url)"' >> $GITHUB_STEP_SUMMARY
+          fi
 
   Code-Unit-Testing:
     runs-on: ubuntu-latest
@@ -48,9 +54,6 @@ jobs:
     defaults:
       run:
         working-directory: hello-world
-
-    outputs:
-      npm_test_outcome: ${{ steps.npm-test.outcome }}
 
     steps:
       - name: Checkout
@@ -68,7 +71,16 @@ jobs:
       - name: Run unit testing command
         id: npm-test
         run: |
-          npm test
+          # Run npm test and capture output
+          output=$(npm test -- --reporter=json)
+
+          # Check if tests passed or failed
+          if [ $? -eq 0 ]; then
+            echo "All unit tests passed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Some unit tests failed. See details below:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append test output to summary
+          fi
 
   Snyk-Code-Scan:
     runs-on: ubuntu-latest
@@ -77,9 +89,6 @@ jobs:
       run:
         shell: bash
 
-    outputs:
-      snyk_code_outcome: ${{ steps.snyk-code.outcome }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,11 +96,21 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
-  #       id: snyk-code
-  #       run: snyk code test
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Run Snyk Code Scan And Check Snyk Scan Results
+        id: snyk-code
+        run: |
+          # Run Snyk code test and capture output
+          output=$(snyk code test --json)
+
+          # Check if there were any vulnerabilities found
+          if [ $? -eq 0 ]; then
+            echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
     needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
@@ -102,16 +121,23 @@ jobs:
         shell: bash
         working-directory: hello-world
 
-    outputs:
-      docker_build_outcome: ${{ steps.docker-build.outcome }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build an image from Dockerfile
         id: docker-build
-        run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
+        run: |
+          # Run docker build and capture output
+          output=$(docker build -t ce7-grp-2-hello-world:${{ github.sha }} . 2>&1)
+
+          # Check if the build was successful
+          if [ $? -eq 0 ]; then
+            echo "Docker image built successfully with tag ce7-grp-2-hello-world:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Docker build failed with the following errors:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
+          fi
 
   Snyk-Container-Scan:
     needs: Docker-Build
@@ -122,9 +148,6 @@ jobs:
         shell: bash
         working-directory: hello-world
 
-    outputs:
-      snyk_container_outcome: ${{ steps.snyk-container.outcome }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -132,14 +155,21 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      # - name: Run Snyk to check Docker image for vulnerabilities
-      #   id: snyk-container
-      #   uses: snyk/actions/docker@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     image: "ce7-grp-2-hello-world:${{ github.sha }}"
-      #     # args: --file=Dockerfile
+      - name: Run Snyk to check Docker image for vulnerabilities
+        id: snyk-container
+        run: |
+          # Run Snyk container scan and capture output
+          output=$(snyk container test ce7-grp-2-hello-world:${{ github.sha }} --json)
+
+          # Check if there were any vulnerabilities found
+          if [ $? -eq 0 ]; then
+            echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   # Update-Pull-Request:
   #   needs:

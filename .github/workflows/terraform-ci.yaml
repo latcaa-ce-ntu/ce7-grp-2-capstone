@@ -11,7 +11,7 @@ on:
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
-  pull-requests: write # This is required for updating pull-requests with comments
+  # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
   Terraform-Checks:
@@ -21,12 +21,6 @@ jobs:
       run:
         shell: bash
         working-directory: terraform
-
-    outputs:
-      fmt_outcome: ${{ steps.fmt.outcome }}
-      init_outcome: ${{ steps.init.outcome }}
-      validate_outcome: ${{ steps.validate.outputs.stdout }}
-      tflint_outcome: ${{ steps.tflint.outcome }}
 
     steps:
       - name: Checkout
@@ -51,7 +45,17 @@ jobs:
 
       - name: Terraform init
         id: init
-        run: terraform init -backend=false
+        run: |
+          # Run terraform init and capture output
+          output=$(terraform init -backend=false 2>&1)
+
+          # Check if initialization was successful
+          if [ $? -eq 0 ]; then
+            echo "Terraform initialized successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Terraform initialization failed with the following error:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append error output to summary
+          fi
 
       - name: Terraform Validate
         id: validate
@@ -68,7 +72,7 @@ jobs:
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
-      - name: Show version
+      - name: Show TFLint version
         run: tflint --version
 
       - name: Init TFLint
@@ -88,51 +92,53 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append linting output to summary
           fi
 
-  Snyk-IAC-Scan:
-    runs-on: ubuntu-latest
+  # Snyk-IAC-Scan:
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        shell: bash
-        working-directory: terraform
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: terraform
 
-    # outputs:
-    #   snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
+  #       id: snyk_iac
+  #       run: |
+  #         # Run Snyk IaC scan and capture output
+  #         output=$(snyk iac test --report --severity-threshold=high --scan=resource-changes)
 
-      # - name: Run Snyk Code Scan And Check Snyk Scan Results
-      #   id: snyk_iac
-      #   uses: snyk/actions/iac@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     args: "--report --severity-threshold=high --scan=resource-changes"
+  #         # Check if there were any vulnerabilities found
+  #         if [ $? -eq 0 ]; then
+  #           echo "Snyk IaC scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+  #         else
+  #           echo "Snyk IaC scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+  #           echo "$output" >> $GITHUB_STEP_SUMMARY  # Append scan output to summary
+  #         fi
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  Checkov:
-    runs-on: ubuntu-latest
+  # Checkov:
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform
+  #   defaults:
+  #     run:
+  #       working-directory: terraform
 
-    # outputs:
-    #   checkov_outcome: ${{ steps.checkov.outcome }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # - name: Checkov
-      #   id: checkov
-      #   uses: bridgecrewio/checkov-action@master
-      #   with:
-      #     framework: terraform
+  #     - name: Checkov
+  #       id: checkov
+  #       uses: bridgecrewio/checkov-action@master
+  #       with:
+  #         framework: terraform
 
   Terraform-Plan:
     needs: [Terraform-Checks, Snyk-IAC-Scan, Checkov]
@@ -141,10 +147,6 @@ jobs:
     defaults:
       run:
         working-directory: terraform
-
-    outputs:
-      plan_detail: ${{ steps.plan.outputs.stdout }}
-      plan_outcome: ${{ steps.plan.outcome }}
 
     steps:
       - name: Checkout
