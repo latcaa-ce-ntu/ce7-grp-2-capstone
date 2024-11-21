@@ -112,7 +112,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  Docker-Build-and-Scan:
+  Docker-Build:
     needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
     runs-on: ubuntu-latest
 
@@ -139,26 +139,21 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
           fi
 
-      # Snyk-Container-Scan:
-      #   needs: Docker-Build
-      #   runs-on: ubuntu-latest
+  Snyk-Container-Scan:
+    needs: Docker-Build
+    runs-on: ubuntu-latest
 
-      #   defaults:
-      #     run:
-      #       shell: bash
-      #       working-directory: hello-world
+    defaults:
+      run:
+        shell: bash
+        working-directory: hello-world
 
-      #   steps:
-      #     - name: Checkout
-      #       uses: actions/checkout@v4
-      - name: Install jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Verify jq Installation
-        run: |
-          jq --version
+      - name: Docker Build
+        run: docker build -t ce7-grp-2-hello-world:${{ github.sha }}
 
       - name: Install Snyk CLI
         run: npm install -g snyk
@@ -167,14 +162,14 @@ jobs:
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          output2=$(snyk container test ce7-grp-2-hello-world:${{ github.sha }} --json)
+          output=$(snyk container test ce7-grp-2-hello-world:${{ github.sha }} --json)
 
           # Check if there were any vulnerabilities found
           if [ $? -eq 0 ]; then
             echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
           else
             echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "$output2" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
