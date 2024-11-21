@@ -4,18 +4,19 @@
   "description": "my simple node application",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RaytraceSG/simple-node-application.git"
+    "url": "git+https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone.git"
   },
   "author": "Azmi",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RaytraceSG/simple-node-application/issues"
+    "url": "https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone/issues"
   },
-  "homepage": "https://github.com/RaytraceSG/simple-node-application#readme",
+  "homepage": "https://github.com/latcaa-ce-ntu/ce7-grp-2-capstone#readme",
   "dependencies": {
     "express": "^4.21.0"
   }

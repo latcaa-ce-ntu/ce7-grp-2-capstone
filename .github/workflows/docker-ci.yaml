@@ -28,6 +28,7 @@ jobs:
 
       - name: Run installation of dependencies commands
         run: npm install
+        run: npm install --save-dev mocha chai supertest
 
       - name: Run unit testing command
         id: npm-test
