@@ -14,13 +14,42 @@ permissions:
   pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
-  Code-Unit-Testing:
+  Security-Audit:
     runs-on: ubuntu-latest
-    outputs:
-      npm_test_outcome: ${{ steps.npm-test.outcome }}
+
     defaults:
       run:
         working-directory: files
+
+    outputs:
+      npm_audit_outcome: ${{ steps.npm-audit.outputs.stdout }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23-alpine"
+
+      - name: Run installation of dependencies commands
+        run: npm install
+
+      - name: Run a security audit
+        id: npm-audit
+        run: |
+          npm audit --audit-level=high
+
+  Code-Unit-Testing:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: files
+
+    outputs:
+      npm_test_outcome: ${{ steps.npm-test.outcome }}
 
     steps:
       - name: Checkout
@@ -64,7 +93,7 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: [Snyk-Code-Scan, Code-Unit-Testing]
+    needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
     runs-on: ubuntu-latest
 
     defaults:
@@ -113,7 +142,13 @@ jobs:
 
   Update-Pull-Request:
     needs:
-      [Code-Unit-Testing, Docker-Build, Snyk-Code-Scan, Snyk-Container-Scan]
+      [
+        Security-Audit,
+        Code-Unit-Testing,
+        Docker-Build,
+        Snyk-Code-Scan,
+        Snyk-Container-Scan,
+      ]
     runs-on: ubuntu-latest
 
     defaults:
@@ -125,16 +160,16 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
+          NPM_AUDIT_OUTCOME: ${{ needs.Security-Audit.outputs.npm_audit_outcome }}
           NPM_TEST_OUTCOME: ${{ needs.Code-Unit-Testing.outputs.npm_test_outcome }}
           BUILD_OUTCOME: ${{ needs.Docker-Build.outputs.docker_build_outcome }}
           SNYK_CODE_OUTCOME: ${{ needs.Snyk-Code-Scan.outputs.snyk_code_outcome }}
           SNYK_CONTAINER_OUTCOME: ${{ needs.Snyk-Container-Scan.outputs.snyk_container_outcome }}
-          # VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.outputs.validate_outcome }}
-          # TFLINT_OUTCOME: ${{ needs.Terraform-Checks.outputs.tflint_outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
+            const output = `#### NPM Security Audit ⚙️\`${process.env.NPM_AUDIT_OUTCOME}\`
+            #### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
             #### Snyk Code Test 🔍\`${process.env.SNYK_CODE_OUTCOME}\`
             #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
             #### Synk Container Test 🔍\`${process.env.SNYK_CONTAINER_OUTCOME}\`
