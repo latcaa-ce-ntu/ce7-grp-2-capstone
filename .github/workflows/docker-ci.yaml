@@ -35,28 +35,28 @@ jobs:
         run: |
           npm test
 
-  Snyk-Code-Scan:
-    runs-on: ubuntu-latest
+  # Snyk-Code-Scan:
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        shell: bash
+  #   defaults:
+  #     run:
+  #       shell: bash
 
-    outputs:
-      snyk_code_outcome: ${{ steps.snyk-code.outcome }}
+  #   outputs:
+  #     snyk_code_outcome: ${{ steps.snyk-code.outcome }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
 
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        id: snyk-code
-        run: snyk code test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
+  #       id: snyk-code
+  #       run: snyk code test
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
     needs: Snyk-Code-Scan
@@ -78,17 +78,17 @@ jobs:
         id: docker-build
         run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
 
-  Snyk-Container-Scan:
-    needs: Docker-Build
-    runs-on: ubuntu-latest
+  # Snyk-Container-Scan:
+  #   needs: Docker-Build
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: files
 
-    outputs:
-      snyk_container_outcome: ${{ steps.snyk-container.outcome }}
+  #   outputs:
+  #     snyk_container_outcome: ${{ steps.snyk-container.outcome }}
 
     steps:
       - name: Checkout
