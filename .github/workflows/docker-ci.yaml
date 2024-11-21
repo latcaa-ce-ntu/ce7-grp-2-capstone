@@ -28,6 +28,11 @@ jobs:
 
       - name: Run installation of dependencies commands
         run: npm install
+
+      - name: Install Mocha, Chai and Supertest
+        # Mocha: A test framework for running tests.
+        # Chai: An assertion library for Node.js.
+        # Supertest: A library for testing HTTP servers.
         run: npm install --save-dev mocha chai supertest
 
       - name: Run unit testing command
