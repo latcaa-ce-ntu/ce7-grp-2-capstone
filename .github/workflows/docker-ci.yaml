@@ -22,7 +22,7 @@ jobs:
         working-directory: files
 
     outputs:
-      npm_audit_outcome: ${{ steps.npm-audit.outputs.stdout }}
+      npm_audit_outcome: ${{ steps.npm-audit.outcome }}
 
     steps:
       - name: Checkout

@@ -114,6 +114,10 @@ jobs:
       run:
         working-directory: terraform
 
+    outputs:
+      plan_detail: ${{ steps.plan.outputs.stdout }}
+      plan_outcome: ${{ steps.plan.outcome }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -146,7 +150,7 @@ jobs:
         run: terraform plan -no-color -var-file="${{ github.base_ref }}.tfvars"
 
   Update-Pull-Request:
-    needs: [Terraform-Plan]
+    needs: [Terraform-Checks, Terraform-Plan, Snyk-IAC-Scan]
     runs-on: ubuntu-latest
 
     defaults:
@@ -158,7 +162,8 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
-          PLAN: ${{ steps.plan.outputs.stdout }}
+          PLAN_DETAIL: ${{ needs.Terraform-Plan.outputs.plan_detail }}
+          PLAN_OUTCOME: ${{ needs.Terraform-Plan.outputs.plan_outcome }}
           FMT_OUTCOME: ${{ needs.Terraform-Checks.outputs.fmt_outcome }}
           INIT_OUTCOME: ${{ needs.Terraform-Checks.outputs.init_outcome }}
           VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.outputs.validate_outcome }}
@@ -173,11 +178,11 @@ jobs:
             #### Terraform Lint 🧹\`${process.env.TFLINT_OUTCOME}\`
             #### Snyk IAC Scan 🔍\`${process.env.SNYK_IAC_OUTCOME}\`
             #### Checkov 🔍\`${process.env.SNYK_IAC_OUTCOME}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Plan 📖\`${process.env.PLAN_OUTCOME}\`
 
             <details><summary>Show Plan</summary>
 
-            \`\`\`${process.env.PLAN}\`\`\`
+            \`\`\`${process.env.PLAN_DETAIL}\`\`\`
 
             </details>
 
