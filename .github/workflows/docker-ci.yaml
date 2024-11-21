@@ -105,7 +105,7 @@ jobs:
           image: "ce7-grp-2-hello-world:${{ github.sha }}"
           # args: --file=Dockerfile
 
-  Update Pull Request:
+  Update-Pull-Request:
     needs:
       [Code-Unit-Testing, Docker-Build, Snyk-Code-Scan, Snyk-Container-Scan]
     runs-on: ubuntu-latest
@@ -129,15 +129,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
-            #### Snyk Code Test ⚙️\`${process.env.SNYK_CODE_OUTCOME}\`
+            #### Snyk Code Test 🔍\`${process.env.SNYK_CODE_OUTCOME}\`
             #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
-            #### Synk Container Test 🤖\`${process.env.SNYK_CONTAINER_OUTCOME}\`
-
-            # <details><summary>Show Plan</summary>
-
-            # \`\`\`${process.env.PLAN}\`\`\`
-
-            # </details>
+            #### Synk Container Test 🔍\`${process.env.SNYK_CONTAINER_OUTCOME}\`
 
             *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
