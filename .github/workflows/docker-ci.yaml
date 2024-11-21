@@ -1,0 +1,149 @@
+name: Docker CI workflow
+run-name: Running Docker CI workflow by ${{ github.actor }}
+
+on:
+  pull_request:
+    branches:
+      - "*"
+    paths:
+      - "files/*"
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required for updating pull-requests with comments
+
+jobs:
+  Code-Unit-Testing:
+    runs-on: ubuntu-latest
+    outputs:
+      npm_test_outcome: ${{ steps.npm-test.outcome }}
+    defaults:
+      run:
+        working-directory: files
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run installation of dependencies commands
+        run: npm install
+
+      - name: Run unit testing command
+        id: npm-test
+        run: |
+          npm test
+
+  Snyk-Code-Scan:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    outputs:
+      snyk_code_outcome: ${{ steps.snyk-code.outcome }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk Code Scan And Check Snyk Scan Results
+        id: snyk-code
+        run: snyk code test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  Docker-Build:
+    needs: Snyk-Code-Scan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    outputs:
+      docker_build_outcome: ${{ steps.docker-build.outcome }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        id: docker-build
+        run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
+
+  Snyk-Container-Scan:
+    needs: Docker-Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    outputs:
+      snyk_container_outcome: ${{ steps.snyk-container.outcome }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        id: snyk-container
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: "ce7-grp-2-hello-world:${{ github.sha }}"
+          # args: --file=Dockerfile
+
+  Update Pull Request:
+    needs:
+      [Code-Unit-Testing, Docker-Build, Snyk-Code-Scan, Snyk-Container-Scan]
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: files
+
+    steps:
+      - name: Update Pull Request
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          NPM_TEST_OUTCOME: ${{ needs.Code-Unit-Testing.outputs.npm_test_outcome }}
+          BUILD_OUTCOME: ${{ needs.Docker-Build.outputs.docker_build_outcome }}
+          SNYK_CODE_OUTCOME: ${{ needs.Snyk-Code-Scan.outputs.snyk_code_outcome }}
+          SNYK_CONTAINER_OUTCOME: ${{ needs.Snyk-Container-Scan.outputs.snyk_container_outcome }}
+          # VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.outputs.validate_outcome }}
+          # TFLINT_OUTCOME: ${{ needs.Terraform-Checks.outputs.tflint_outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
+            #### Snyk Code Test ⚙️\`${process.env.SNYK_CODE_OUTCOME}\`
+            #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
+            #### Synk Container Test 🤖\`${process.env.SNYK_CONTAINER_OUTCOME}\`
+
+            # <details><summary>Show Plan</summary>
+
+            # \`\`\`${process.env.PLAN}\`\`\`
+
+            # </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })

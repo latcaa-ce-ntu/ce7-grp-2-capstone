@@ -1,5 +1,5 @@
-name: CI workflow
-run-name: Running CI workflow by ${{ github.actor }}
+name: Terraform CI workflow
+run-name: Running Terraform CI workflow by ${{ github.actor }}
 
 on:
   pull_request:
@@ -7,7 +7,6 @@ on:
       - "*"
     paths:
       - "terraform/*"
-      - "files/*"
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -16,8 +15,6 @@ permissions:
 
 jobs:
   Terraform-Checks:
-    if: ${{ contains(github.event.pull_request.changed_files, 'terraform/') }}
-    # if: ${{ github.event.push.changes.*.filename | join(' ') | contains('terraform/') }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -63,51 +60,16 @@ jobs:
         id: tflint
         run: tflint -f compact
 
-  Docker-Checks:
-    if: ${{ contains(github.event.pull_request.changed_files, 'files/') }}
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build an image from Dockerfile
-        id: docker-build
-        run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
-
-  Snyk-Code-Scan:
-    if: ${{ contains(github.event.pull_request.changed_files, 'files/') }}
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Snyk CLI
-        run: npm install -g snyk
-
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        run: snyk code test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
   Snyk-IAC-Scan:
-    if: ${{ contains(github.event.pull_request.changed_files, 'files/') }}
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: terraform
+
+    outputs:
+      snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
 
     steps:
       - name: Checkout
@@ -117,40 +79,15 @@ jobs:
         run: npm install -g snyk
 
       - name: Run Snyk Code Scan And Check Snyk Scan Results
+        id: snyk_iac
         uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: "--report --severity-threshold=high --scan=resource-changes"
 
-  Snyk-Container-Scan:
-    if: ${{ contains(github.event.pull_request.changed_files, 'files/') }}
-    needs: Docker-Checks
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Snyk CLI
-        run: npm install -g snyk
-
-      - name: Run Snyk to check Docker image for vulnerabilities
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: "ce7-grp-2-hello-world:${{ github.sha }}"
-          # args: --file=Dockerfile
-
   Terraform-Plan:
-    if: ${{ contains(github.event.pull_request.changed_files, 'terraform/') }}
-    needs: [Terraform-Checks]
+    needs: [Terraform-Checks, Snyk-IAC-Scan]
     runs-on: ubuntu-latest
 
     defaults:
@@ -197,6 +134,7 @@ jobs:
           INIT_OUTCOME: ${{ needs.Terraform-Checks.outputs.init_outcome }}
           VALIDATE_OUTPUTS_STDOUT: ${{ needs.Terraform-Checks.outputs.validate_outcome }}
           TFLINT_OUTCOME: ${{ needs.Terraform-Checks.outputs.tflint_outcome }}
+          SNYK_IAC_OUTCOME: ${{ needs.Snyk-IAC-Scan.outputs.snyk_iac_outcome }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -204,6 +142,7 @@ jobs:
             #### Terraform Initialization ⚙️\`${process.env.INIT_OUTCOME}\`
             #### Terraform Validation 🤖${process.env.VALIDATE_OUTPUTS_STDOUT}
             #### Terraform Lint 🧹\`${process.env.TFLINT_OUTCOME}\`
+            #### Snyk IAC Scan 🔍\`${process.env.SNYK_IAC_OUTCOME}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
