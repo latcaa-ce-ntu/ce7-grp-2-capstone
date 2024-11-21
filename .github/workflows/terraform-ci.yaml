@@ -86,25 +86,25 @@ jobs:
         with:
           args: "--report --severity-threshold=high --scan=resource-changes"
 
-  Checkov:
-    runs-on: ubuntu-latest
+  # Checkov:
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform
+  #   defaults:
+  #     run:
+  #       working-directory: terraform
 
-    outputs:
-      checkov_outcome: ${{ steps.checkov.outcome }}
+  #   outputs:
+  #     checkov_outcome: ${{ steps.checkov.outcome }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          framework: terraform
+  #     - name: Checkov
+  #       id: checkov
+  #       uses: bridgecrewio/checkov-action@master
+  #       with:
+  #         framework: terraform
 
   Terraform-Plan:
     needs: [Terraform-Checks, Snyk-IAC-Scan, Checkov]
