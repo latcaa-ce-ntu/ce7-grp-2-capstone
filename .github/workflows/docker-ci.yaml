@@ -159,7 +159,7 @@ jobs:
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          output=$(snyk container test ce7-grp-2-hello-world:${{ github.sha }} --json)
+          output=$(snyk container test ce7-grp-2-hello-world:${{ github.sha }} -d)
 
           # Check if there were any vulnerabilities found
           if [ $? -eq 0 ]; then
