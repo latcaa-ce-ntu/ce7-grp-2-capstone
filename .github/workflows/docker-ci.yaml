@@ -7,6 +7,7 @@ on:
       - "*"
     paths:
       - "files/*"
+      - "hello-world/*"
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -19,7 +20,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: files
+        working-directory: hello-world
 
     outputs:
       npm_audit_outcome: ${{ steps.npm-audit.outcome }}
@@ -46,7 +47,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: files
+        working-directory: hello-world
 
     outputs:
       npm_test_outcome: ${{ steps.npm-test.outcome }}
@@ -99,7 +100,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: hello-world
 
     outputs:
       docker_build_outcome: ${{ steps.docker-build.outcome }}
@@ -119,7 +120,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: hello-world
 
     outputs:
       snyk_container_outcome: ${{ steps.snyk-container.outcome }}
@@ -140,45 +141,45 @@ jobs:
       #     image: "ce7-grp-2-hello-world:${{ github.sha }}"
       #     # args: --file=Dockerfile
 
-  Update-Pull-Request:
-    needs:
-      [
-        Security-Audit,
-        Code-Unit-Testing,
-        Docker-Build,
-        Snyk-Code-Scan,
-        Snyk-Container-Scan,
-      ]
-    runs-on: ubuntu-latest
+  # Update-Pull-Request:
+  #   needs:
+  #     [
+  #       Security-Audit,
+  #       Code-Unit-Testing,
+  #       Docker-Build,
+  #       Snyk-Code-Scan,
+  #       Snyk-Container-Scan,
+  #     ]
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: files
+  #   defaults:
+  #     run:
+  #       working-directory: hello-world
 
-    steps:
-      - name: Update Pull Request
-        if: always()
-        uses: actions/github-script@v7
-        env:
-          NPM_AUDIT_OUTCOME: ${{ needs.Security-Audit.outputs.npm_audit_outcome }}
-          NPM_TEST_OUTCOME: ${{ needs.Code-Unit-Testing.outputs.npm_test_outcome }}
-          BUILD_OUTCOME: ${{ needs.Docker-Build.outputs.docker_build_outcome }}
-          SNYK_CODE_OUTCOME: ${{ needs.Snyk-Code-Scan.outputs.snyk_code_outcome }}
-          SNYK_CONTAINER_OUTCOME: ${{ needs.Snyk-Container-Scan.outputs.snyk_container_outcome }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### NPM Security Audit ⚙️\`${process.env.NPM_AUDIT_OUTCOME}\`
-            #### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
-            #### Snyk Code Test 🔍\`${process.env.SNYK_CODE_OUTCOME}\`
-            #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
-            #### Synk Container Test 🔍\`${process.env.SNYK_CONTAINER_OUTCOME}\`
+  #   steps:
+  #     - name: Update Pull Request
+  #       if: always()
+  #       uses: actions/github-script@v7
+  #       env:
+  #         NPM_AUDIT_OUTCOME: ${{ needs.Security-Audit.outputs.npm_audit_outcome }}
+  #         NPM_TEST_OUTCOME: ${{ needs.Code-Unit-Testing.outputs.npm_test_outcome }}
+  #         BUILD_OUTCOME: ${{ needs.Docker-Build.outputs.docker_build_outcome }}
+  #         SNYK_CODE_OUTCOME: ${{ needs.Snyk-Code-Scan.outputs.snyk_code_outcome }}
+  #         SNYK_CONTAINER_OUTCOME: ${{ needs.Snyk-Container-Scan.outputs.snyk_container_outcome }}
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           const output = `#### NPM Security Audit ⚙️\`${process.env.NPM_AUDIT_OUTCOME}\`
+  #           #### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
+  #           #### Snyk Code Test 🔍\`${process.env.SNYK_CODE_OUTCOME}\`
+  #           #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
+  #           #### Synk Container Test 🔍\`${process.env.SNYK_CONTAINER_OUTCOME}\`
 
-            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+  #           *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+  #           github.rest.issues.createComment({
+  #             issue_number: context.issue.number,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: output
+  #           })

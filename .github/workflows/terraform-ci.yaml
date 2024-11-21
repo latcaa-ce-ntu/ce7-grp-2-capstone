@@ -37,7 +37,17 @@ jobs:
 
       - name: Terraform fmt check
         id: fmt
-        run: terraform fmt -check
+        run: |
+          # Run terraform fmt check and capture output
+          output=$(terraform fmt -check)
+          echo "$output" >> $GITHUB_STEP_SUMMARY  # Append output to step summary
+
+          # Check if formatting issues were found
+          if [ $? -ne 0 ]; then
+            echo "Formatting issues found!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "All files are properly formatted." >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Terraform init
         id: init
@@ -45,7 +55,15 @@ jobs:
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate -no-color
+        run: |
+          # Run terraform validate and capture output
+          output=$(terraform validate -no-color)
+          if [ $? -eq 0 ]; then
+            echo "Terraform configuration is valid." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Terraform configuration is invalid:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append validation errors to summary
+          fi
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -58,7 +76,17 @@ jobs:
 
       - name: Run TFLint
         id: tflint
-        run: tflint -f compact
+        run: |
+          # Run TFLint and capture output
+          output=$(tflint -f compact)
+
+          # Check if there were any linting issues
+          if [ $? -eq 0 ]; then
+            echo "TFLint found no issues." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "TFLint found the following issues:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append linting output to summary
+          fi
 
   Snyk-IAC-Scan:
     runs-on: ubuntu-latest
