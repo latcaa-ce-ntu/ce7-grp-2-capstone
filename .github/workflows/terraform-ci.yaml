@@ -68,8 +68,8 @@ jobs:
         shell: bash
         working-directory: terraform
 
-    outputs:
-      # snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
+    # outputs:
+    #   snyk_iac_outcome: ${{ steps.snyk_iac.outcome }}
 
     steps:
       - name: Checkout
@@ -93,8 +93,8 @@ jobs:
       run:
         working-directory: terraform
 
-    outputs:
-      # checkov_outcome: ${{ steps.checkov.outcome }}
+    # outputs:
+    #   checkov_outcome: ${{ steps.checkov.outcome }}
 
     steps:
       - name: Checkout
