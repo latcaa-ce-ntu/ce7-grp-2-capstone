@@ -11,6 +11,7 @@ COPY package.json ./
 COPY . .
 
 # Install dependencies
+RUN npm install -g npm@10.9.1
 RUN npm install
 
 # Expose the port that the app runs on
