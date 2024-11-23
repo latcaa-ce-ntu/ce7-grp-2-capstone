@@ -165,7 +165,7 @@ jobs:
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile)
+          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --json)
           echo "$output" >> $GITHUB_STEP_SUMMARY
 
           # Check if there were any vulnerabilities found
