@@ -10,7 +10,7 @@ on:
       - "hello-world/*"
 
 env:
-  ECR_REPOSITORY: ce7-grp-2-hello-world-ecr
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
 
 permissions:
   id-token: write # This is required for requesting the JWT
