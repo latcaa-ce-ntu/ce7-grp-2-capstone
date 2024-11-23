@@ -9,6 +9,9 @@ on:
       - "files/*"
       - "hello-world/*"
 
+env:
+  ECR_REPOSITORY: ce7-grp-2-hello-world-ecr
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -129,11 +132,11 @@ jobs:
         id: docker-build
         run: |
           # Run docker build and capture output
-          output=$(docker build -t ce7-grp-2-hello-world:${{ github.sha }} . 2>&1)
+          output=$(docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} . 2>&1)
 
           # Check if the build was successful
           if [ $? -eq 0 ]; then
-            echo "Docker image built successfully with tag ce7-grp-2-hello-world:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
+            echo "Docker image built successfully with tag ${{ env.ECR_REPOSITORY }}:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
           else
             echo "Docker build failed with the following errors:" >> $GITHUB_STEP_SUMMARY
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
@@ -153,7 +156,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Docker Build
-        run: docker build -t ce7-grp-2-hello-world:${{ github.sha }} .
+        run: docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
 
       - name: Install Snyk CLI
         run: npm install -g snyk
@@ -162,7 +165,7 @@ jobs:
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          output=$(snyk container test ce7-grp-2-hello-world:$CONTAINER_TAG --file=Dockerfile --json)
+          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --json)
           echo "$output" >> $GITHUB_STEP_SUMMARY
 
           # Check if there were any vulnerabilities found
@@ -174,7 +177,7 @@ jobs:
           fi
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          CONTAINER_TAG: ${{ github.sha }}
+          # CONTAINER_TAG: ${{ github.sha }}
 
   # Update-Pull-Request:
   #   needs:
