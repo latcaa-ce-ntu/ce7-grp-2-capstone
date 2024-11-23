@@ -168,16 +168,16 @@ jobs:
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json
-          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
-          echo "$output" >> $GITHUB_STEP_SUMMARY
+          snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json-file-output=vuln.json
+          # output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
+          # echo "$output" >> $GITHUB_STEP_SUMMARY
 
           # Check if there were any vulnerabilities found
           if [ $? -eq 0 ]; then
             echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
           else
             echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "$output" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+            echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
   # Update-Pull-Request:
