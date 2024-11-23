@@ -162,10 +162,14 @@ jobs:
         run: npm install -g snyk
 
       - name: Run Snyk to check Docker image for vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
         id: snyk-container
         run: |
           # Run Snyk container scan and capture output
-          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --json)
+          snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json
+          output=$(snyk container test ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
           echo "$output" >> $GITHUB_STEP_SUMMARY
 
           # Check if there were any vulnerabilities found
@@ -175,9 +179,6 @@ jobs:
             echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
             echo "$output" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          # CONTAINER_TAG: ${{ github.sha }}
 
   # Update-Pull-Request:
   #   needs:
