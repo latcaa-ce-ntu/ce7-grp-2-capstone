@@ -21,7 +21,7 @@ permissions:
   # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
-  Docker Push:
+  Docker-Push:
     runs-on: ubuntu-latest
 
     defaults:
