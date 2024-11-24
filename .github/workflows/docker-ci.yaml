@@ -213,13 +213,20 @@ jobs:
             echo "Docker container is running successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "Docker container is not running." >> $GITHUB_STEP_SUMMARY
+            exit 1  # Exit with a non-zero code to indicate failure
           fi
 
       - name: curl test
         run: |
-          curl_ouput=$(curl -s localhost:8080)
+          curl_output=$(curl -s localhost:8080)
+          curl_exit_code=$?  # Capture the exit code of the curl command
           echo "$curl_output" >> $GITHUB_STEP_SUMMARY
 
+          # Check if curl command was successful
+          if [ $curl_exit_code -ne 0 ]; then
+            echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
+            exit $curl_exit_code  # Exit with the curl error code
+          fi
 
           # Check if the response matches "Hello, World!"
           if [ "$curl_output" = "Hello, World!" ]; then
@@ -228,6 +235,7 @@ jobs:
           else
             echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
             echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
+            exit 1  # Exit with a non-zero code to indicate failure
           fi
 
   # Update-Pull-Request:
