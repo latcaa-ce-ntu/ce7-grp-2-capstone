@@ -218,7 +218,8 @@ jobs:
       - name: curl test
         run: |
           curl_ouput=$(curl -s localhost:8080)
-          echo "$curl" >> $GITHUB_STEP_SUMMARY
+          echo "$curl_output" >> $GITHUB_STEP_SUMMARY
+
 
           # Check if the response matches "Hello, World!"
           if [ "$curl_output" = "Hello, World!" ]; then
