@@ -182,7 +182,7 @@ jobs:
           fi
 
   Docker-Run-and-curl-test:
-    needs: Docker-Build
+    needs: Snyk-Container-Scan
     runs-on: ubuntu-latest
 
     defaults:
@@ -200,7 +200,7 @@ jobs:
       - name: Docker Run
         run: |
           # Run the container
-          docker run --rm -d -p 8080:8080 ${{ env.IMAGE_NAME }}:${{ github.sha }} --name hw_container
+          docker run --rm --name hw_container -d -p 8080:8080 ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
           # Wait for the container to start up
           sleep 5
