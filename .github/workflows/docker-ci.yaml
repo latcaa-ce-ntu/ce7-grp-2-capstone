@@ -181,7 +181,7 @@ jobs:
             echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
-  Docker Run and curl test:
+  Docker-Run-and-curl-test:
     needs: Docker-Build
     runs-on: ubuntu-latest
 
