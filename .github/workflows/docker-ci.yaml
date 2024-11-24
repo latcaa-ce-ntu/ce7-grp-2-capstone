@@ -99,21 +99,21 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      # - name: Run Snyk Code Scan And Check Snyk Scan Results
-      #   id: snyk-code
-      #   run: |
-      #     # Run Snyk code test and capture output
-      #     output=$(snyk code test --json)
+      - name: Run Snyk Code Scan And Check Snyk Scan Results
+        id: snyk-code
+        run: |
+          # Run Snyk code test and capture output
+          output=$(snyk code test --json)
 
-      #     # Check if there were any vulnerabilities found
-      #     if [ $? -eq 0 ]; then
-      #       echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
-      #     else
-      #       echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-      #       echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
-      #     fi
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          # Check if there were any vulnerabilities found
+          if [ $? -eq 0 ]; then
+            echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
     needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
