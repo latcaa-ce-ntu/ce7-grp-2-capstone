@@ -180,6 +180,54 @@ jobs:
             echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
+  Docker Run and curl test:
+    needs: Docker-Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: hello-world
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Build
+        run: docker build -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+
+      - name: Docker Run
+        run: |
+          # Run the container
+          docker run --rm -d -p 8080:8080 ${{ env.ECR_REPOSITORY }}:${{ github.sha }} --name hw_container
+
+          # Wait for the container to start up
+          sleep 5
+
+          # Check if the container is running
+          container_status=$(docker inspect -f '{{.State.Running}}' hw_container)
+          echo "Container running status: $container_status" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$container_status" = "true" ]; then
+            echo "Docker container is running successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Docker container is not running." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: curl test
+        run: |
+          curl_ouput=$(curl -s localhost:8080)
+          echo "$curl" >> $GITHUB_STEP_SUMMARY
+
+          # Check if the response matches "Hello, World!"
+          if [ "$curl_output" = "Hello, World!" ]; then
+            echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
+            echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
+            echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
+          fi
+
   # Update-Pull-Request:
   #   needs:
   #     [
