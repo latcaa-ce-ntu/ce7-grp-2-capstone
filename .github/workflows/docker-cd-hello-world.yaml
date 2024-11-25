@@ -52,7 +52,7 @@ jobs:
           context: ./hello-world/
           file: ./hello-world/Dockerfile
           push: true
-          tags: latest
+          tags: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}.${{ github.run_number }}
           # tags: ${{ steps.meta.outputs.tags }}
           # labels: ${{ steps.meta.outputs.labels }}
 
