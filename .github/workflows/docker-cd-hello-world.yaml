@@ -2,12 +2,11 @@ name: Docker CD workflow
 run-name: Running Docker CD workflow by ${{ github.actor }}
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - "*"
     paths:
-      - "files/*"
+      - "hello-world/*"
 
 env:
   REGISTRY: ghcr.io
@@ -26,7 +25,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: files
+        working-directory: hello-world
 
     steps:
       - name: Checkout
