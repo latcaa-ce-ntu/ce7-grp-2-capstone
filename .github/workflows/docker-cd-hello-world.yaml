@@ -46,7 +46,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:hello-world"
+          context: ./hello-world
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
