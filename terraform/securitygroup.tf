@@ -42,6 +42,33 @@ resource "aws_security_group" "sg-allow-ssh-http-https" {
   #checkov:skip=CKV2_AWS_5:Ensure that Security Groups are attached to another resource
 }
 
+resource "aws_security_group" "sg-allow-tcp-5000" {
+  name        = "${var.name_prefix}-sg-allow-5000-${terraform.workspace}"
+  description = "Allow tcp port 5000 for app"
+  vpc_id      = module.vpc.vpc_id # var.vpc_id
+
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allows incoming traffic (TCP port 5000) from any IPv4 address on the internet."
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+    description      = "Allows unrestricted outbound traffic from the associated resource to any destination on the internet, using any protocol and port."
+  }
+  #checkov:skip=CKV_AWS_260:Ensure no security groups allow ingress from 0.0.0.0:0 to port 80
+  #checkov:skip=CKV_AWS_24:Ensure no security groups allow ingress from 0.0.0.0:0 to port 22
+  #checkov:skip=CKV2_AWS_5:Ensure that Security Groups are attached to another resource
+}
+
+
 # Uses an existing security group, filtered by sg_name in variables.tf
 # data "aws_security_group" "selected_security_group" {
 #  filter {
