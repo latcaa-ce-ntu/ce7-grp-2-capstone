@@ -1,5 +1,5 @@
-name: Docker CD workflow
-run-name: Running Docker CD workflow by ${{ github.actor }}
+name: Docker CD hello world workflow
+run-name: Running Docker CD hello world workflow by ${{ github.actor }}
 
 on:
   workflow_dispatch:
