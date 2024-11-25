@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  IMAGE_NAME: ${{ vars.HW_IMAGE_NAME }}
 
 permissions:
   id-token: write # This is required for requesting the JWT
