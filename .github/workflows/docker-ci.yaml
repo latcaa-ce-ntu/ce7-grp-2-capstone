@@ -256,7 +256,7 @@ jobs:
         run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Run Grype Container Scan
-        - uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v5
         with:
           image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
           fail-build: true
@@ -299,7 +299,6 @@ jobs:
   #           echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
   #           echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
   #         fi
-
 
   Docker-Run:
     needs: Grype-Container-Scan
