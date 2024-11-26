@@ -210,7 +210,7 @@ jobs:
     needs:
       [
         Python-Safety-Bandit-Scan,
-        Security-Audit,
+        NPM-Security-Audit,
         Snyk-Code-Scan,
         Code-Unit-Testing,
       ]
