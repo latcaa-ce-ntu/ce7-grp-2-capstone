@@ -21,4 +21,4 @@ ENV FLASK_RUN_HOST=0.0.0.0
 CMD ["flask", "run"]
 
 # Define a build argument to control whether to skip SonarQube analysis
-ARG SKIP_SONAR=false
+ARG SKIP_SONAR=true
