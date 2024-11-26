@@ -3,11 +3,12 @@ import csv
 import random
 import os
 
-app = Flask(__name__)
+# Set the template and static folder to empty, all files in root folder.
+app = Flask(__name__, template_folder='', static_folder='')
 
 # Initial Jokes database (csv)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-JOKES_FILE = os.path.join(BASE_DIR, 'data', 'jokesbank.csv')
+JOKES_FILE = os.path.join(BASE_DIR, 'jokesbank.csv')
 
 # Loading all jokes from database
 def load_jokes():
