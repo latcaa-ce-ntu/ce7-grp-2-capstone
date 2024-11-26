@@ -6,8 +6,9 @@ import os
 
 # Set the template and static folder to empty, all files in root folder.
 app = Flask(__name__, template_folder='', static_folder='')
-# app.config['WTF_CSRF_ENABLED'] = False # Sensitive
-csrf = CSRFProtect(app)  # Enable CSRF protection
+
+# Enable CSRF protection
+csrf = CSRFProtect(app)  
 
 # Initial Jokes database (csv)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

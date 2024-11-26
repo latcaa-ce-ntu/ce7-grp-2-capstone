@@ -5,15 +5,7 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-# COPY . /app
-COPY Dockerfile /app/Dockerfile
-COPY index.html /app/index.html
-COPY joke.png /app/joke.png
-COPY jokes_app.py /app/jokes_app.py
-COPY jokesbank.csv /app/jokesbank.csv
-COPY requirements.txt /app/requirements.txt
-COPY styles.css /app/styles.css
-
+COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
