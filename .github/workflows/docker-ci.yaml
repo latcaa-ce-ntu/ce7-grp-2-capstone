@@ -30,7 +30,7 @@ jobs:
       - name: Check for .js files
         id: check
         run: |
-          if ls files/*.js 1> /dev/null 2>&1; then
+          if ls *.js 1> /dev/null 2>&1; then
             echo "has_js_files=true" >> $GITHUB_ENV
           else
             echo "has_js_files=false" >> $GITHUB_ENV
@@ -48,7 +48,7 @@ jobs:
       - name: Check for .py files
         id: check
         run: |
-          if ls files/*.py 1> /dev/null 2>&1; then
+          if ls *.py 1> /dev/null 2>&1; then
             echo "has_python_files=true" >> $GITHUB_ENV
           else
             echo "has_python_files=false" >> $GITHUB_ENV
