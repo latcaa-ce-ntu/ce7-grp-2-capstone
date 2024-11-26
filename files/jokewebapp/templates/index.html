@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CE7 A3LW Cloud Team</title>
+  <!-- Call styles.css -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+  <div>
+    <!-- Call images -->
+    <div class="header-container">
+      <img src="{{ url_for('static', filename='joke.png') }}" class="images">
+      <h1> The Great Laugh!</h1>
+    </div>
+
+    <div class="joke-box" id="joke-container">
+      <p id="joke">Alert: This button unleashes a joke <br>brace yourself for laughter!</p>
+    </div>
+    <!-- Call javascript function -->
+    <div>
+      <button onclick="fetchJoke()" id="button-id">Show Me The Joke Now</button>
+    </div>
+  </div>
+
+  <!-- javascript function -->
+  <script>
+    // Call jokes_app.py function
+    async function fetchJoke() {
+      try {
+        changeButtonName()      // Call changeButtonName function
+        changeBackgroundColor() // Call changeBackgroundColor function
+        const emojis = ['😀', '😄', '😁', '😃', '😆', '😊'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+        const response = await fetch('/get-joke');
+        const data = await response.json();
+        document.getElementById('joke').innerHTML = data.joke + randomEmoji;
+      } catch (error) {
+        console.error("Error fetching joke:", error);
+      }
+    }
+
+    // Function to change background
+    function changeBackgroundColor() {
+      const jokeContainer = document.getElementById('joke-container');
+      const randomColor = `hsl(${Math.random() * 360}, 100%, 85%)`;
+      jokeContainer.style.backgroundColor = randomColor;
+    }
+
+    // Function to change button name
+    function changeButtonName() {
+      const button = document.getElementById('button-id');
+      button.innerText = "Show New Joke";
+    }
+  </script>
+</body>
+
+</html>
