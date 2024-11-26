@@ -31,9 +31,11 @@ jobs:
         id: check
         run: |
           if ls *.js 1> /dev/null 2>&1; then
-            echo "has_js_files=true" >> $GITHUB_ENV
+            echo "has_js_files=true" >> $GITHUB_OUTPUT
+            echo "has_js_files=true"
           else
-            echo "has_js_files=false" >> $GITHUB_ENV
+            echo "has_js_files=false" >> $GITHUB_OUTPUT
+            echo "has_js_files=false"
           fi
 
   check-python-files:
@@ -49,9 +51,11 @@ jobs:
         id: check
         run: |
           if ls *.py 1> /dev/null 2>&1; then
-            echo "has_python_files=true" >> $GITHUB_ENV
+            echo "has_python_files=true" >> $GITHUB_OUTPUT
+            echo "has_python_files=true"
           else
-            echo "has_python_files=false" >> $GITHUB_ENV
+            echo "has_python_files=false" >> $GITHUB_OUTPUT
+            echo "has_python_files=false"
           fi
 
   NPM-Security-Audit:
