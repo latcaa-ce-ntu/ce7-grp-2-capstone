@@ -23,6 +23,11 @@ jobs:
     outputs:
       has_js_files: ${{ steps.check.outputs.has_js_files }}
 
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,6 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has_python_files: ${{ steps.check.outputs.has_python_files }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
 
     steps:
       - name: Checkout
@@ -65,6 +75,7 @@ jobs:
 
     defaults:
       run:
+        shell: bash
         working-directory: files
 
     steps:
@@ -100,6 +111,7 @@ jobs:
 
     defaults:
       run:
+        shell: bash
         working-directory: files
 
     steps:
