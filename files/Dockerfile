@@ -10,6 +10,17 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Define a build argument to control whether to skip SonarQube analysis
+ARG SKIP_SONAR=true
+
+# Conditionally run SonarQube analysis based on the SKIP_SONAR argument
+RUN if [ "$SKIP_SONAR" = "false" ]; then \
+    echo "Running SonarQube analysis..."; \
+    # Add commands to run SonarQube analysis here (e.g., sonar-scanner or mvn sonar:sonar) \
+    else \
+    echo "Skipping SonarQube analysis..."; \
+    fi
+    
 # Expose the port the app runs on (Flask defaults to 5000)
 EXPOSE 5000
 
@@ -19,6 +30,3 @@ ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run flask when the container launches
 CMD ["flask", "run"]
-
-# Define a build argument to control whether to skip SonarQube analysis
-ARG SKIP_SONAR=true
