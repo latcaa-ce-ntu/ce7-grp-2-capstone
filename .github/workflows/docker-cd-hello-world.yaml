@@ -9,7 +9,7 @@ on:
     tags:
       - "v*"
     paths:
-      - "hello-world/*"
+      - "hello-world/**"
 
 env:
   REGISTRY: ghcr.io
