@@ -176,35 +176,35 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append test output to summary
           fi
 
-  Snyk-Code-Scan:
-    runs-on: ubuntu-latest
+  # Snyk-Code-Scan:
+  #   runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        shell: bash
+  #   defaults:
+  #     run:
+  #       shell: bash
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
 
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        id: snyk-code
-        run: |
-          # Run Snyk code test and capture output
-          output=$(snyk code test --json)
+  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
+  #       id: snyk-code
+  #       run: |
+  #         # Run Snyk code test and capture output
+  #         output=$(snyk code test --json)
 
-          # Check if there were any vulnerabilities found
-          if [ $? -eq 0 ]; then
-            echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
-          fi
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #         # Check if there were any vulnerabilities found
+  #         if [ $? -eq 0 ]; then
+  #           echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+  #         else
+  #           echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+  #           echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
+  #         fi
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
     needs:
@@ -239,7 +239,7 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
           fi
 
-  Snyk-Container-Scan:
+  Grype-Container-Scan:
     needs: Docker-Build
     runs-on: ubuntu-latest
 
@@ -255,30 +255,54 @@ jobs:
       - name: Docker Build
         run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+      - name: Run Grype Container Scan
+        - uses: anchore/scan-action@v5
+        with:
+          image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          fail-build: true
+          severity-cutoff: high
 
-      - name: Run Snyk to check Docker image for vulnerabilities
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  # Snyk-Container-Scan:
+  #   needs: Docker-Build
+  #   runs-on: ubuntu-latest
 
-        id: snyk-container
-        run: |
-          # Run Snyk container scan and capture output
-          snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json-file-output=vuln.json
-          # output=$(snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
-          # echo "$output" >> $GITHUB_STEP_SUMMARY
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: files
 
-          # Check if there were any vulnerabilities found
-          if [ $? -eq 0 ]; then
-            echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
-          fi
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Docker Build
+  #       run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
+
+  #     - name: Run Snyk to check Docker image for vulnerabilities
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  #       id: snyk-container
+  #       run: |
+  #         # Run Snyk container scan and capture output
+  #         snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json-file-output=vuln.json
+  #         # output=$(snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
+  #         # echo "$output" >> $GITHUB_STEP_SUMMARY
+
+  #         # Check if there were any vulnerabilities found
+  #         if [ $? -eq 0 ]; then
+  #           echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+  #         else
+  #           echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+  #           echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+  #         fi
+
 
   Docker-Run:
-    needs: Snyk-Container-Scan
+    needs: Grype-Container-Scan
     runs-on: ubuntu-latest
 
     defaults:
