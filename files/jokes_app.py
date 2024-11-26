@@ -3,6 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 import csv
 import random
 import os
+import secrets  
 
 # Set the template and static folder to empty, all files in root folder.
 app = Flask(__name__, template_folder='', static_folder='')
@@ -31,7 +32,8 @@ def home():
 # get jokes function
 @app.route('/get-joke')
 def get_joke():
-    joke = random.choice(jokes).replace('\\n','<br>')  # Convert "\b " to "<br>"" for HTML
+    # joke = random.choice(jokes).replace('\\n','<br>')  # Convert "\b " to "<br>"" for HTML
+    joke = secrets.choice(jokes).replace('\\n','<br>')  # Convert "\b " to "<br>"" for HTML
     return jsonify(joke=joke)
 
 if __name__ == '__main__':
