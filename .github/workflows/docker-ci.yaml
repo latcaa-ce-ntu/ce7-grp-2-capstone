@@ -114,7 +114,9 @@ jobs:
 
       - name: Bandit Scan
         id: bandit
-        uses: shundor/bandit-action@v1
+        # Update by wtc 20241127
+        # uses: shundor/bandit-action@v1
+        uses: shundor/python-bandit-action@v1
         with:
           path: "."
           level: high
