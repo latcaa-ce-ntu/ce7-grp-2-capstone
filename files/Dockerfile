@@ -2,11 +2,11 @@
 # FROM python:3.9-slim
 FROM python:3.13-alpine
 
-# Install required packages for python 3.13-alpine
-RUN apk add --no-cache shadow
-
+# Install shadow required packages for python 3.13-alpine
 # Set up a non-root user
-RUN groupadd -r ce7-grp2-app && useradd -r -g ce7-grp2-app ce7-grp2-user
+RUN apk add --no-cache shadow && \
+    groupadd -r ce7-grp2-app && \
+    useradd -r -g ce7-grp2-app ce7-grp2-user
 
 # Set the working directory in the container
 WORKDIR /app
