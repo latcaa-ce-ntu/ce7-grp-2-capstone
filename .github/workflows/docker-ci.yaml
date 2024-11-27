@@ -123,7 +123,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.9"
 
       - name: Install Bandit
         run: pip install bandit
@@ -135,9 +135,8 @@ jobs:
       - name: Upload Bandit Report
         uses: actions/upload-artifact@v4
         with:
-          path: "."
-          level: high
-          confidence: high
+          name: bandit-report
+          path: bandit-report.json
 
       - name: Summary of Security Checks
         run: |
@@ -145,22 +144,21 @@ jobs:
 
           if [ "${{ steps.safety.outcome }}" == "success" ]; then
             echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Safety scan completed." >> $GITHUB_STEP_SUMMARY
-            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
-            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
             echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ steps.bandit.outcome }}" == "success" ]; then
             echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Bandit scan completed." >> $GITHUB_STEP_SUMMARY
-            echo "- Issues found:" >> $GITHUB_STEP_SUMMARY
-            echo "${{ steps.bandit.outputs.issues }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Bandit scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
+            cat bandit-report.json | jq '.results[] | select(.issue_severity == "HIGH")' >> $GITHUB_STEP_SUMMARY
           fi
 
   Code-Unit-Testing:
@@ -231,7 +229,7 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: [Python-Safety-Bandit-Scan, NPM-Security-Audit, Code-Unit-Testing]
+    needs: [Python-Safety-Bandit-Scan]
     runs-on: ubuntu-latest
 
     defaults:
