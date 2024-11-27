@@ -31,11 +31,9 @@ jobs:
         id: check
         run: |
           if ls *.js 1> /dev/null 2>&1; then
-            echo "has_js_files=true" >> $GITHUB_OUTPUT
-            echo "has_js_files=true"
+            echo "has_js_files=true" >> $GITHUB_ENV
           else
-            echo "has_js_files=false" >> $GITHUB_OUTPUT
-            echo "has_js_files=false"
+            echo "has_js_files=false" >> $GITHUB_ENV
           fi
 
   check-python-files:
@@ -51,11 +49,9 @@ jobs:
         id: check
         run: |
           if ls *.py 1> /dev/null 2>&1; then
-            echo "has_python_files=true" >> $GITHUB_OUTPUT
-            echo "has_python_files=true"
+            echo "has_python_files=true" >> $GITHUB_ENV
           else
-            echo "has_python_files=false" >> $GITHUB_OUTPUT
-            echo "has_python_files=false"
+            echo "has_python_files=false" >> $GITHUB_ENV
           fi
 
   NPM-Security-Audit:
@@ -114,11 +110,7 @@ jobs:
 
       - name: Bandit Scan
         id: bandit
-        # Update by wtc 20241127
-        # uses: shundor/bandit-action@v1
-        # uses: shundor/python-bandit-action@v1.0
-        uses: shundor/bandit-action@main
-              
+        uses: shundor/bandit-action@v1
         with:
           path: "."
           level: high
@@ -215,7 +207,13 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: [Python-Safety-Bandit-Scan, NPM-Security-Audit, Code-Unit-Testing]
+    needs:
+      [
+        Python-Safety-Bandit-Scan,
+        NPM-Security-Audit,
+        Snyk-Code-Scan,
+        Code-Unit-Testing,
+      ]
     runs-on: ubuntu-latest
 
     defaults:
