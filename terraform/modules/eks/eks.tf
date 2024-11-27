@@ -13,7 +13,8 @@ resource "aws_eks_cluster" "ce7_grp_2_eks" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policy # This prevents race conditions where the cluster might try to use the role before it's ready
+    aws_iam_role_policy_attachment.eks_cluster_policy, # This prevents race conditions where the cluster might try to use the role before it's ready
+    aws_security_group.eks_cluster_sg
   ]
 }
 
@@ -30,14 +31,41 @@ resource "aws_eks_node_group" "ce7_grp_2_node_group" {
     min_size     = 1 # Min no. of nodes to maintain
   }
 
+  launch_template {
+    version = "$Latest"
+    name = aws_launch_template.eks_nodes.name
+  }
+
   instance_types = ["t3.medium"]
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
-    aws_iam_role_policy_attachment.eks_container_registry
     # node_policy = basic nodes operations
     # cni_policy = Networking functionality
-    # container_registry = Access to ECR to pull container images
+    aws_eks_cluster.ce7_grp_2_eks
   ]
+
+  tags = {
+    "Name" = "${var.name_prefix}-node"
+  }
+}
+
+resource "aws_launch_template" "eks_nodes" {
+  name = "${var.name_prefix}-node-template"
+
+  vpc_security_group_ids = [aws_security_group.eks_cluster_sg.id]
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "${var.name_prefix}-node"
+    }
+  }
+
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    /etc/eks/bootstrap.sh ${aws_eks_cluster.ce7_grp_2_eks.name}
+    EOF
+  )
 }
