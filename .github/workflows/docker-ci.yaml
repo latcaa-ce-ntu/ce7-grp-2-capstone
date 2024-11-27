@@ -23,11 +23,6 @@ jobs:
     outputs:
       has_js_files: ${{ steps.check.outputs.has_js_files }}
 
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,22 +31,15 @@ jobs:
         id: check
         run: |
           if ls *.js 1> /dev/null 2>&1; then
-            echo "has_js_files=true" >> $GITHUB_OUTPUT
-            echo "has_js_files=true"
+            echo "has_js_files=true" >> $GITHUB_ENV
           else
-            echo "has_js_files=false" >> $GITHUB_OUTPUT
-            echo "has_js_files=false"
+            echo "has_js_files=false" >> $GITHUB_ENV
           fi
 
   check-python-files:
     runs-on: ubuntu-latest
     outputs:
       has_python_files: ${{ steps.check.outputs.has_python_files }}
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
 
     steps:
       - name: Checkout
@@ -61,11 +49,9 @@ jobs:
         id: check
         run: |
           if ls *.py 1> /dev/null 2>&1; then
-            echo "has_python_files=true" >> $GITHUB_OUTPUT
-            echo "has_python_files=true"
+            echo "has_python_files=true" >> $GITHUB_ENV
           else
-            echo "has_python_files=false" >> $GITHUB_OUTPUT
-            echo "has_python_files=false"
+            echo "has_python_files=false" >> $GITHUB_ENV
           fi
 
   NPM-Security-Audit:
@@ -75,7 +61,6 @@ jobs:
 
     defaults:
       run:
-        shell: bash
         working-directory: files
 
     steps:
@@ -111,7 +96,6 @@ jobs:
 
     defaults:
       run:
-        shell: bash
         working-directory: files
 
     steps:
@@ -139,16 +123,9 @@ jobs:
       - name: Upload Bandit Report
         uses: actions/upload-artifact@v4
         with:
-          name: bandit-report
-          path: bandit-report.json
-
-      # - name: Bandit Scan
-      #   id: bandit
-      #   uses: shundor/bandit-action@v1
-      #   with:
-      #     path: "."
-      #     level: high
-      #     confidence: high
+          path: "."
+          level: high
+          confidence: high
 
       - name: Summary of Security Checks
         run: |
@@ -241,7 +218,13 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: [Python-Safety-Bandit-Scan, NPM-Security-Audit, Code-Unit-Testing]
+    needs:
+      [
+        Python-Safety-Bandit-Scan,
+        NPM-Security-Audit,
+        Snyk-Code-Scan,
+        Code-Unit-Testing,
+      ]
     runs-on: ubuntu-latest
 
     defaults:
