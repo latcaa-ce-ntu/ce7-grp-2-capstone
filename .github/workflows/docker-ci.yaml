@@ -124,13 +124,30 @@ jobs:
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
 
-      - name: Bandit Scan
-        id: bandit
-        uses: shundor/bandit-action@v1
+      - name: Set Up Python
+        uses: actions/setup-python@v5
         with:
-          path: "."
-          level: high
-          confidence: high
+          python-version: "3.13"
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit Scan
+        run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+      # - name: Bandit Scan
+      #   id: bandit
+      #   uses: shundor/bandit-action@v1
+      #   with:
+      #     path: "."
+      #     level: high
+      #     confidence: high
 
       - name: Summary of Security Checks
         run: |
