@@ -1,4 +1,18 @@
-# Create Amazon ECR repository to store Docker images
-resource "aws_ecr_repository" "ecr_repo" {
-  name = "${var.name_prefix}-hello-world-ecr"
+resource "aws_ecr_repository" "ce7_grp_2_webapp" {
+  name                 = "${var.name_prefix}-webapp"
+  image_tag_mutability = "MUTABLE"
+
+  # Automatically scan images for vulnerabilities when they are pushed
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${var.name_prefix}-webapp"
+  }
+}
+
+# Data source to retrieve the details of the ECR repository created above
+data "aws_ecr_repository" "ce7_grp_2_webapp_data" {
+  name = aws_ecr_repository.ce7_grp_2_webapp.name
 }
