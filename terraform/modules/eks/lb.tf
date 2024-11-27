@@ -62,7 +62,7 @@ data "aws_lb_target_group" "targrp_data" {
 
 # S3 bucket for ALB logs
 resource "aws_s3_bucket" "lb_logs" {
-  bucket = "${var.name_prefix}-alb-logs"
+  bucket        = "${var.name_prefix}-alb-logs"
   force_destroy = true
 }
 
@@ -103,7 +103,7 @@ resource "aws_s3_bucket_policy" "lb_logs" {
       {
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::127311923021:root"  # ALB account ID for us-east-1
+          AWS = "arn:aws:iam::127311923021:root" # ALB account ID for us-east-1
         }
         Action = [
           "s3:PutObject"

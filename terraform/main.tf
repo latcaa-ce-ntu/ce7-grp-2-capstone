@@ -1,7 +1,7 @@
 # Main Terraform Configuration File
 # Network Module Configuration - Creates the VPC and associated networking components
 module "network" {
-  source               = "../modules/network"
+  source               = "./modules/network"
   vpc_cidr             = var.vpc_cidr
   pub_subnet_cidrs     = var.pub_subnet_cidrs
   pvt_subnet_cidrs     = var.pvt_subnet_cidrs
@@ -12,7 +12,7 @@ module "network" {
 
 # EKS (Elastic Kubernetes Service) Module Configuration - Sets up the Kubernetes cluster and related components
 module "eks" {
-  source             = "../modules/eks"
+  source             = "./modules/eks"
   vpc_id             = module.network.vpc_id
   public_subnet_ids  = module.network.public_subnet_ids
   private_subnet_ids = module.network.private_subnet_ids
