@@ -11,8 +11,3 @@ resource "aws_ecr_repository" "ce7_grp_2_webapp" {
     Name = "${var.name_prefix}-webapp"
   }
 }
-
-# Data source to retrieve the details of the ECR repository created above
-data "aws_ecr_repository" "ce7_grp_2_webapp_data" {
-  name = aws_ecr_repository.ce7_grp_2_webapp.name
-}

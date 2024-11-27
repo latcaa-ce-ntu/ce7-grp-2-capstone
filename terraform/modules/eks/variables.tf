@@ -17,10 +17,6 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "ecr_repository_url" {
-  type = string
-}
-
 variable "lb_name" {
   description = "Name of LB"
   type        = string

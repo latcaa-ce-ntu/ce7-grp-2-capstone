@@ -17,11 +17,6 @@ resource "aws_lb" "ce7_grp_2_lb" {
   }
 }
 
-# Data source to retrieve the details of the ALB created above
-data "aws_lb" "ce7_grp_2_lb_data" {
-  name = aws_lb.ce7_grp_2_lb.name
-}
-
 resource "aws_lb_listener" "ce7_grp_2_listener" {
   load_balancer_arn = aws_lb.ce7_grp_2_lb.arn
   port              = var.lb_listener_port
@@ -53,11 +48,6 @@ resource "aws_lb_target_group" "ce7_grp_2_targrp" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
-}
-
-# Data source to retrieve the details of the target group
-data "aws_lb_target_group" "targrp_data" {
-  name = aws_lb_target_group.ce7_grp_2_targrp.name
 }
 
 # S3 bucket for ALB logs
@@ -123,6 +113,3 @@ resource "aws_s3_bucket_policy" "lb_logs" {
     ]
   })
 }
-
-# Get current account ID
-data "aws_caller_identity" "current" {}
