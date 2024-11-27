@@ -17,7 +17,6 @@ module "eks" {
   public_subnet_ids  = module.network.public_subnet_ids
   private_subnet_ids = module.network.private_subnet_ids
   subnet_ids         = concat(module.network.public_subnet_ids, module.network.private_subnet_ids)
-  ecr_repository_url = var.ecr_repository_url
 }
 
 # Infrastructure Overview:
