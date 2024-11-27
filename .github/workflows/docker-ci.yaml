@@ -100,7 +100,7 @@ jobs:
             echo "$output" | jq -r '.advisories | to_entries[] | "Package: \(.value.module_name), Severity: \(.value.severity), Title: \(.value.title), URL: \(.value.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
-  Python-Safety-Bandit-Scan:
+  Python-Safety-Scan:
     runs-on: ubuntu-latest
     needs: check-python-files
     if: needs.check-python-files.outputs.has_python_files == 'true'
@@ -119,6 +119,32 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
+
+      - name: Summary of Security Checks
+        run: |
+          if [ "${{ steps.safety.outcome }}" == "success" ]; then
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  Python-Bandit-Scan:
+    runs-on: ubuntu-latest
+    needs: check-python-files
+    if: needs.check-python-files.outputs.has_python_files == 'true'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: files
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -140,18 +166,6 @@ jobs:
 
       - name: Summary of Security Checks
         run: |
-          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.safety.outcome }}" == "success" ]; then
-            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
-            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
-            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
           if [ "${{ steps.bandit.outcome }}" == "success" ]; then
             echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
             echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
@@ -277,6 +291,11 @@ jobs:
           image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
           fail-build: true
           severity-cutoff: high
+
+      - name: upload Anchore scan SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
 
   # Snyk-Container-Scan:
   #   needs: Docker-Build
