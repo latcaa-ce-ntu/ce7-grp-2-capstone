@@ -27,7 +27,6 @@ resource "aws_route_table" "pub_RT" {
 
 # Public Route Table Association
 resource "aws_route_table_association" "pub_RT_assoc" {
-  #count          = 3
   count          = length(aws_subnet.pub_subnets)
   subnet_id      = aws_subnet.pub_subnets[count.index].id
   route_table_id = aws_route_table.pub_RT.id
@@ -51,7 +50,7 @@ resource "aws_route_table" "pvt_RT" {
   vpc_id = aws_vpc.main_vpc.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     # Through the NAT Gateway for secure internet access
     nat_gateway_id = aws_nat_gateway.nat_gw.id
   }

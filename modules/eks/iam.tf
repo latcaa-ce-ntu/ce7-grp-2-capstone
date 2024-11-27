@@ -43,8 +43,8 @@ resource "aws_iam_role" "eks_node_role" {
 
 # - eks_node_policy: Basic node operations
 resource "aws_iam_role_policy_attachment" "eks_node_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy" 
-  role       = aws_iam_role.eks_node_role.name                      
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.eks_node_role.name
 }
 
 # - eks_cni_policy: Networking functionality

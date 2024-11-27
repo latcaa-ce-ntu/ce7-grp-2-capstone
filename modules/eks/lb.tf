@@ -63,6 +63,26 @@ data "aws_lb_target_group" "targrp_data" {
 # S3 bucket for ALB logs
 resource "aws_s3_bucket" "lb_logs" {
   bucket = "${var.name_prefix}-alb-logs"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
 }
 
 # Enable bucket versioning
@@ -85,11 +105,24 @@ resource "aws_s3_bucket_policy" "lb_logs" {
         Principal = {
           AWS = "arn:aws:iam::127311923021:root"  # ALB account ID for us-east-1
         }
-        Action = "s3:PutObject"
-        Resource = [
-          "${aws_s3_bucket.lb_logs.arn}/*"
+        Action = [
+          "s3:PutObject"
         ]
+        Resource = "${aws_s3_bucket.lb_logs.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com"
+        }
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = "${aws_s3_bucket.lb_logs.arn}/*"
       }
     ]
   })
 }
+
+# Get current account ID
+data "aws_caller_identity" "current" {}
