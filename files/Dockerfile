@@ -1,5 +1,9 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# FROM python:3.9-slim
+FROM python:3.13-alpine
+
+# Install required packages
+RUN apk add --no-cache shadow
 
 # Set up a non-root user
 RUN groupadd -r ce7-grp2-app && useradd -r -g ce7-grp2-app ce7-grp2-user
