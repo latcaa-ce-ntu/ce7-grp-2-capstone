@@ -41,3 +41,9 @@ variable "allowed_ingress_cidr" {
   type        = string
   default     = "0.0.0.0/0"
 }
+
+variable "name_prefix" {
+  description = "Prefix to be added to resource names"
+  type        = string
+  default     = "ce7-grp-2"
+}
