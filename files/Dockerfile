@@ -9,6 +9,7 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 # COPY . /app
+COPY .dockerignore /app/.dockerignore
 COPY Dockerfile /app/Dockerfile
 COPY index.html /app/index.html
 COPY joke.png /app/joke.png
