@@ -31,7 +31,7 @@ resource "aws_lb_listener" "ce7_grp_2_listener" {
 
 # Define a target group to register targets (e.g., ECS instances)
 resource "aws_lb_target_group" "ce7_grp_2_targrp" {
-  name        = "ce7-grp-2-targrp"
+  name        = "${var.name_prefix}-targrp"
   port        = var.lb_target_port
   protocol    = var.lb_protocol
   target_type = "ip"

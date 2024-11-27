@@ -1,6 +1,6 @@
 # EC2 node IAM role and policies
 resource "aws_iam_role" "eks_cluster_role" {
-  name = "ce7-grp-2-eks-cluster-role"
+  name = "${var.name_prefix}-eks-cluster-role"
 
   # Trust policy allowing EKS service to assume this role
   assume_role_policy = jsonencode({
@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 
 # IAM role for the EKS node group
 resource "aws_iam_role" "eks_node_role" {
-  name = "ce7-grp-2-eks-node-role"
+  name = "${var.name_prefix}-eks-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

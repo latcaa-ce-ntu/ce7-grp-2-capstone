@@ -44,3 +44,9 @@ variable "lb_protocol" {
   type        = string
   default     = "HTTP"
 }
+
+variable "name_prefix" {
+  description = "Prefix to be added to resource names"
+  type        = string
+  default     = "ce7-grp-2"
+}

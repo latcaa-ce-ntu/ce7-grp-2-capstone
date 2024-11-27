@@ -1,6 +1,6 @@
 # Define the main EKS cluster resource
 resource "aws_eks_cluster" "ce7_grp_2_eks" {
-  name     = "ce7-grp-2-eks-cluster"           # Name in AWS Console and kubectl
+  name     = "${var.name_prefix}-eks-cluster"           # Name in AWS Console and kubectl
   role_arn = aws_iam_role.eks_cluster_role.arn # This role allows EKS to create and manage resources like load balancers and EC2 instances
   version  = "1.31"
 
@@ -20,7 +20,7 @@ resource "aws_eks_cluster" "ce7_grp_2_eks" {
 # EKS Self-managed via EC2
 resource "aws_eks_node_group" "ce7_grp_2_node_group" {
   cluster_name    = aws_eks_cluster.ce7_grp_2_eks.name
-  node_group_name = "ce7-grp-2-node-group"
+  node_group_name = "${var.name_prefix}-node-group"
   node_role_arn   = aws_iam_role.eks_node_role.arn # Allows nodes permission to interact with AWS Services
   subnet_ids      = var.private_subnet_ids # Nodes are placed in Pvt Subnets
 
