@@ -2,7 +2,7 @@
 # FROM python:3.9-slim
 FROM python:3.13-alpine
 
-# Install required packages
+# Install required packages for python 3.13-alpine
 RUN apk add --no-cache shadow
 
 # Set up a non-root user
