@@ -6,6 +6,12 @@ resource "aws_lb" "ce7_grp_2_lb" {
   security_groups    = [aws_security_group.lb_sg.id]
   subnets            = var.public_subnet_ids
 
+  # Enable access logging
+  access_logs {
+    bucket  = aws_s3_bucket.lb_logs.id
+    prefix  = "loadbalancer-logs"
+    enabled = true
+  }
   tags = {
     Name = var.lb_name
   }
@@ -52,4 +58,38 @@ resource "aws_lb_target_group" "ce7_grp_2_targrp" {
 # Data source to retrieve the details of the target group
 data "aws_lb_target_group" "targrp_data" {
   name = aws_lb_target_group.ce7_grp_2_targrp.name
+}
+
+# S3 bucket for ALB logs
+resource "aws_s3_bucket" "lb_logs" {
+  bucket = "${var.name_prefix}-alb-logs"
+}
+
+# Enable bucket versioning
+resource "aws_s3_bucket_versioning" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Bucket policy to allow ALB to write logs
+resource "aws_s3_bucket_policy" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::127311923021:root"  # ALB account ID for us-east-1
+        }
+        Action = "s3:PutObject"
+        Resource = [
+          "${aws_s3_bucket.lb_logs.arn}/*"
+        ]
+      }
+    ]
+  })
 }
