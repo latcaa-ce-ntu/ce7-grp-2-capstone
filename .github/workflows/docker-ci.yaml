@@ -133,10 +133,11 @@ jobs:
         run: pip install bandit
 
       - name: Run Bandit Scan
+        id: bandit
         run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
 
       - name: Upload Bandit Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: bandit-report
           path: bandit-report.json
