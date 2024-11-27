@@ -286,6 +286,7 @@ jobs:
         run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Run Grype Container Scan
+        id: grype
         uses: anchore/scan-action@v5
         with:
           image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
@@ -293,10 +294,20 @@ jobs:
           severity-cutoff: high
 
       - name: upload Anchore scan SARIF report
+        if: ${{ failure() }}
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+          sarif_file: ${{ steps.grype.outputs.sarif }}
 
+      - name: Summarize Grype Scan Results
+        run: |
+          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Grype scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- High severity issues found." >> $GITHUB_STEP_SUMMARY
+          fi
   # Snyk-Container-Scan:
   #   needs: Docker-Build
   #   runs-on: ubuntu-latest
