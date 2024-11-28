@@ -1,5 +1,5 @@
 resource "time_sleep" "wait_for_kubernetes" {
-  depends_on = [aws_eks_cluster.ce7_grp_2_eks]
+  depends_on      = [aws_eks_cluster.ce7_grp_2_eks]
   create_duration = "20s"
 }
 
@@ -24,7 +24,7 @@ resource "aws_iam_role" "app_role" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:applications:${var.name_prefix}-app"
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-app"
         }
       }
     }]
@@ -33,7 +33,7 @@ resource "aws_iam_role" "app_role" {
 
 resource "kubernetes_service_account" "app_service_account" {
   metadata {
-    name      = "${var.name_prefix}-app"  # This matches what we used in the IAM role
+    name      = "${var.name_prefix}-app" # This matches what we used in the IAM role
     namespace = kubernetes_namespace.apps.metadata[0].name
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn

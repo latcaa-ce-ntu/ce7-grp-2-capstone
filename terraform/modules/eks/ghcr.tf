@@ -1,28 +1,5 @@
 data "aws_caller_identity" "current" {}
 
-# # Create an AWS Secrets Manager secret to store GHCR credentials
-# data "aws_secretsmanager_secret" "existing_pat" {
-#   name = "${var.name_prefix}-github-pat"
-#   count = 0  # This prevents error if secret doesn't exist
-# }
-
-# resource "time_sleep" "wait_for_secret_deletion" {
-#   create_duration = "30s"
-# }
-
-# resource "aws_secretsmanager_secret" "github_pat" {
-#   name        = "${var.name_prefix}-github-pat"
-#   description = "GitHub Personal Access Token for GHCR authentication"
-  
-#   depends_on = [time_sleep.wait_for_secret_deletion]
-# }
-
-
-# resource "aws_secretsmanager_secret_version" "github_pat" {
-#   secret_id     = aws_secretsmanager_secret.github_pat.id
-#   secret_string = var.github_token
-# }
-
 # Create a Kubernetes secret for GHCR authentication
 resource "kubernetes_secret" "ghcr_auth" {
   metadata {
@@ -45,26 +22,26 @@ resource "kubernetes_secret" "ghcr_auth" {
 
 resource "kubernetes_deployment" "application" {
   metadata {
-    name      = "my-application"
+    name      = "${var.name_prefix}-my-application"
     namespace = kubernetes_namespace.apps.metadata[0].name
     labels = {
-      app = "my-application"
+      app = "${var.name_prefix}-my-application"
     }
   }
 
   spec {
-    replicas = 2  # Number of pod replicas to maintain
+    replicas = 2 # Number of pod replicas to maintain
 
     selector {
       match_labels = {
-        app = "my-application"
+        app = "${var.name_prefix}-my-application"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "my-application"
+          app = "${var.name_prefix}-my-application"
         }
       }
 
@@ -72,11 +49,11 @@ resource "kubernetes_deployment" "application" {
         image_pull_secrets {
           name = kubernetes_secret.ghcr_auth.metadata[0].name
         }
-        
+
         container {
-          name  = "my-app"
-          image = "ghcr.io/latcaa-ce-ntu/ce7-grp-2-the-great-laugh:tag"
-          
+          name  = "${var.name_prefix}-my-app"
+          image = "ghcr.io/latcaa-ce-ntu/ce7-grp-2-the-great-laugh:d17909ad49a1692873e796c4e89e3063ea24061d.2"
+
           port {
             container_port = 80
           }
@@ -97,22 +74,22 @@ resource "kubernetes_deployment" "application" {
   }
 }
 
-# # Add IAM policy to allow EKS nodes to access Secrets Manager
-# resource "aws_iam_role_policy" "node_secrets_policy" {
-#   name = "${var.name_prefix}-eks-node-secrets-policy"
-#   role = aws_iam_role.eks_node_role.id
+resource "kubernetes_service" "application" {
+  metadata {
+    name      = "${var.name_prefix}-my-application"
+    namespace = kubernetes_namespace.apps.metadata[0].name
+  }
 
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "secretsmanager:GetSecretValue",
-#           "secretsmanager:DescribeSecret"
-#         ]
-#         Resource = [aws_secretsmanager_secret.github_pat.arn]
-#       }
-#     ]
-#   })
-# }
+  spec {
+    selector = {
+      app = "${var.name_prefix}-my-application" # This matches your deployment labels
+    }
+
+    port {
+      port        = 80 # Port the service listens on
+      target_port = 80 # Port your container exposes
+    }
+
+    type = "NodePort" # This allows external access via node ports
+  }
+}

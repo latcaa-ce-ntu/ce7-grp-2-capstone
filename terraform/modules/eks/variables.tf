@@ -50,7 +50,7 @@ variable "name_prefix" {
 variable "github_org" {
   description = "GitHub organization name"
   type        = string
-  default = "latcaa-ce-ntu"
+  default     = "latcaa-ce-ntu"
 }
 
 variable "github_token" {
