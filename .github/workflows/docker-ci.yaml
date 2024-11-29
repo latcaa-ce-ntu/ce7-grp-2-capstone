@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "files/*"
+      - "${{ vars.APP_FOLDER }}/**"
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -15,15 +15,65 @@ env:
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
+  security-events: write # This is required for github/codeql-action/upload-sarif to upload SARIF results
   # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
-  Security-Audit:
+  check-js-files:
     runs-on: ubuntu-latest
+    outputs:
+      has_js_files: ${{ steps.check.outputs.has_js_files }}
 
     defaults:
       run:
-        working-directory: files
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for .js files
+        id: check
+        run: |
+          if ls *.js 1> /dev/null 2>&1; then
+            echo "has_js_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_js_files=false" >> $GITHUB_OUTPUT
+          fi
+
+  check-python-files:
+    runs-on: ubuntu-latest
+    outputs:
+      has_python_files: ${{ steps.check.outputs.has_python_files }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for .py files
+        id: check
+        run: |
+          if ls *.py 1> /dev/null 2>&1; then
+            echo "has_python_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_python_files=false" >> $GITHUB_OUTPUT
+          fi
+
+  Javascript-Security-Audit:
+    runs-on: ubuntu-latest
+    needs: check-js-files
+    if: needs.check-js-files.outputs.has_js_files == 'true'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -51,12 +101,15 @@ jobs:
             echo "$output" | jq -r '.advisories | to_entries[] | "Package: \(.value.module_name), Severity: \(.value.severity), Title: \(.value.title), URL: \(.value.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
-  Code-Unit-Testing:
+  Javascript-Unit-Testing:
     runs-on: ubuntu-latest
+    needs: check-js-files
+    if: needs.check-js-files.outputs.has_js_files == 'true'
 
     defaults:
       run:
-        working-directory: files
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -85,44 +138,120 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append test output to summary
           fi
 
-  Snyk-Code-Scan:
+  Python-Safety-Scan:
     runs-on: ubuntu-latest
+    needs: check-python-files
+    if: needs.check-python-files.outputs.has_python_files == 'true'
 
     defaults:
       run:
         shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+      - name: Run Safety CLI to check for vulnerabilities
+        id: safety
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          args: --detailed-output # To always see detailed output from this action
 
-      - name: Run Snyk Code Scan And Check Snyk Scan Results
-        id: snyk-code
+      - name: Summary of Security Checks
         run: |
-          # Run Snyk code test and capture output
-          output=$(snyk code test --json)
-
-          # Check if there were any vulnerabilities found
-          if [ $? -eq 0 ]; then
-            echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.safety.outcome }}" == "success" ]; then
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
           else
-            echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
           fi
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  Python-Bandit-Scan:
+    runs-on: ubuntu-latest
+    needs: check-python-files
+    if: needs.check-python-files.outputs.has_python_files == 'true'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit Scan
+        id: bandit
+        run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+      - name: Summary of Security Checks
+        run: |
+          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
+            cat bandit-report.json | jq '.results[] | select(.issue_severity == "HIGH")' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Snyk-Code-Scan:
+  #   runs-on: ubuntu-latest
+
+  #   defaults:
+  #     run:
+  #       shell: bash
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
+
+  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
+  #       id: snyk-code
+  #       run: |
+  #         # Run Snyk code test and capture output
+  #         output=$(snyk code test --json)
+
+  #         # Check if there were any vulnerabilities found
+  #         if [ $? -eq 0 ]; then
+  #           echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+  #         else
+  #           echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+  #           echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
+  #         fi
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   Docker-Build:
-    needs: [Security-Audit, Snyk-Code-Scan, Code-Unit-Testing]
+    needs: [Python-Safety-Scan, Python-Bandit-Scan]
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -142,14 +271,14 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
           fi
 
-  Snyk-Container-Scan:
+  Grype-Container-Scan:
     needs: Docker-Build
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -158,36 +287,76 @@ jobs:
       - name: Docker Build
         run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+      - name: Run Grype Container Scan
+        id: grype
+        uses: anchore/scan-action@v5
+        with:
+          image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          fail-build: true
+          severity-cutoff: high
 
-      - name: Run Snyk to check Docker image for vulnerabilities
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: upload Anchore scan SARIF report
+        if: ${{ failure() }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.grype.outputs.sarif }}
 
-        id: snyk-container
+      - name: Summarize Grype Scan Results
         run: |
-          # Run Snyk container scan and capture output
-          snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json-file-output=vuln.json
-          # output=$(snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
-          # echo "$output" >> $GITHUB_STEP_SUMMARY
-
-          # Check if there were any vulnerabilities found
-          if [ $? -eq 0 ]; then
-            echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.grype.outcome }}" == "success" ]; then
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Grype scan completed successfully." >> $GITHUB_STEP_SUMMARY
           else
-            echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-            echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- High severity issues found." >> $GITHUB_STEP_SUMMARY
           fi
 
-  Docker-Run-and-curl-test:
-    needs: Snyk-Container-Scan
+  # Snyk-Container-Scan:
+  #   needs: Docker-Build
+  #   runs-on: ubuntu-latest
+
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: ${{ vars.APP_FOLDER }}
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Docker Build
+  #       run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
+
+  #     - name: Run Snyk to check Docker image for vulnerabilities
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  #       id: snyk-container
+  #       run: |
+  #         # Run Snyk container scan and capture output
+  #         snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json-file-output=vuln.json
+  #         # output=$(snyk container test ${{ env.IMAGE_NAME }}:${{ github.sha }} --file=Dockerfile --exclude-base-image-vulns --json)
+  #         # echo "$output" >> $GITHUB_STEP_SUMMARY
+
+  #         # Check if there were any vulnerabilities found
+  #         if [ $? -eq 0 ]; then
+  #           echo "Snyk Container scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
+  #         else
+  #           echo "Snyk Container scan found the following issues:" >> $GITHUB_STEP_SUMMARY
+  #           echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
+  #         fi
+
+  Docker-Run:
+    needs: Grype-Container-Scan
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -215,27 +384,27 @@ jobs:
             exit 1  # Exit with a non-zero code to indicate failure
           fi
 
-      - name: curl test
-        run: |
-          curl_output=$(curl -s localhost:8080)
-          curl_exit_code=$?  # Capture the exit code of the curl command
-          echo "$curl_output" >> $GITHUB_STEP_SUMMARY
+      # - name: curl test
+      #   run: |
+      #     curl_output=$(curl -s localhost:8080)
+      #     curl_exit_code=$?  # Capture the exit code of the curl command
+      #     echo "$curl_output" >> $GITHUB_STEP_SUMMARY
 
-          # Check if curl command was successful
-          if [ $curl_exit_code -ne 0 ]; then
-            echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
-            exit $curl_exit_code  # Exit with the curl error code
-          fi
+      #     # Check if curl command was successful
+      #     if [ $curl_exit_code -ne 0 ]; then
+      #       echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
+      #       exit $curl_exit_code  # Exit with the curl error code
+      #     fi
 
-          # Check if the response matches "Hello, World!"
-          if [ "$curl_output" = "Hello, World!" ]; then
-            echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
-            echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
-            echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
-            exit 1  # Exit with a non-zero code to indicate failure
-          fi
+      #     # Check if the response matches "Hello, World!"
+      #     if [ "$curl_output" = "Hello, World!" ]; then
+      #       echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
+      #       echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
+      #       echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
+      #       exit 1  # Exit with a non-zero code to indicate failure
+      #     fi
 
   # Update-Pull-Request:
   #   needs:
@@ -250,7 +419,7 @@ jobs:
 
   #   defaults:
   #     run:
-  #       working-directory: files
+  #       working-directory: ${{ vars.APP_FOLDER }}
 
   #   steps:
   #     - name: Update Pull Request

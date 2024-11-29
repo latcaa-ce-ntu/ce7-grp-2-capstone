@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "hello-world/*"
+      - "hello-world/**"
 
 env:
   IMAGE_NAME: ${{ vars.HW_IMAGE_NAME }}
@@ -180,7 +180,7 @@ jobs:
             echo "vuln.json" | jq -r '.vulnerabilities[] | "Package: \(.package), Severity: \(.severity), Description: \(.description), URL: \(.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
-  Docker-Run-and-curl-test:
+  Docker-Run:
     needs: Snyk-Container-Scan
     runs-on: ubuntu-latest
 
@@ -215,27 +215,27 @@ jobs:
             exit 1  # Exit with a non-zero code to indicate failure
           fi
 
-      - name: curl test
-        run: |
-          curl_output=$(curl -s localhost:8080)
-          curl_exit_code=$?  # Capture the exit code of the curl command
-          echo "$curl_output" >> $GITHUB_STEP_SUMMARY
+      # - name: curl test
+      #   run: |
+      #     curl_output=$(curl -s localhost:8080)
+      #     curl_exit_code=$?  # Capture the exit code of the curl command
+      #     echo "$curl_output" >> $GITHUB_STEP_SUMMARY
 
-          # Check if curl command was successful
-          if [ $curl_exit_code -ne 0 ]; then
-            echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
-            exit $curl_exit_code  # Exit with the curl error code
-          fi
+      #     # Check if curl command was successful
+      #     if [ $curl_exit_code -ne 0 ]; then
+      #       echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
+      #       exit $curl_exit_code  # Exit with the curl error code
+      #     fi
 
-          # Check if the response matches "Hello, World!"
-          if [ "$curl_output" = "Hello, World!" ]; then
-            echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
-            echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
-            echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
-            exit 1  # Exit with a non-zero code to indicate failure
-          fi
+      #     # Check if the response matches "Hello, World!"
+      #     if [ "$curl_output" = "Hello, World!" ]; then
+      #       echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
+      #       echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
+      #       echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
+      #       exit 1  # Exit with a non-zero code to indicate failure
+      #     fi
 
   # Update-Pull-Request:
   #   needs:

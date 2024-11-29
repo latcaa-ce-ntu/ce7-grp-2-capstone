@@ -2,11 +2,12 @@ name: Terraform CD Workflow
 run-name: Running Terraform CD Workflow by ${{ github.actor }}
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - "*"
     paths:
-      - "terraform/*"
+      - "terraform/**"
 
 permissions:
   id-token: write # This is required for requesting the JWT
