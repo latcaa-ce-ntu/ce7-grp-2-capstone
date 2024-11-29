@@ -143,7 +143,7 @@ jobs:
       #     framework: terraform
 
   Terraform-Plan:
-    needs: [Terraform-Checks, Snyk-IAC-Scan, Checkov]
+    needs: [Terraform-Checks, Checkov]
     runs-on: ubuntu-latest
 
     defaults:
