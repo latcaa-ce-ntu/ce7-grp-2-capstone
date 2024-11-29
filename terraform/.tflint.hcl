@@ -14,7 +14,7 @@ config {
   call_module_type = "local"
 }
 
-# Disable specific rules
+# Disable specific rules that cause false positives in modules
 rule "aws_resource_missing_tags" {
   enabled = false
 }
