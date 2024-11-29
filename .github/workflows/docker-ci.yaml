@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "files/**"
+      - "${{ vars.APP_FOLDER }}/**"
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -27,7 +27,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -50,7 +50,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -65,7 +65,7 @@ jobs:
             echo "has_python_files=false" >> $GITHUB_OUTPUT
           fi
 
-  NPM-Security-Audit:
+  Javascript-Security-Audit:
     runs-on: ubuntu-latest
     needs: check-js-files
     if: needs.check-js-files.outputs.has_js_files == 'true'
@@ -73,7 +73,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -101,82 +101,7 @@ jobs:
             echo "$output" | jq -r '.advisories | to_entries[] | "Package: \(.value.module_name), Severity: \(.value.severity), Title: \(.value.title), URL: \(.value.url)"' >> $GITHUB_STEP_SUMMARY
           fi
 
-  Python-Safety-Scan:
-    runs-on: ubuntu-latest
-    needs: check-python-files
-    if: needs.check-python-files.outputs.has_python_files == 'true'
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run Safety CLI to check for vulnerabilities
-        id: safety
-        uses: pyupio/safety-action@v1
-        with:
-          api-key: ${{ secrets.SAFETY_API_KEY }}
-
-      - name: Summary of Security Checks
-        run: |
-          if [ "${{ steps.safety.outcome }}" == "success" ]; then
-            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
-            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
-            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
-  Python-Bandit-Scan:
-    runs-on: ubuntu-latest
-    needs: check-python-files
-    if: needs.check-python-files.outputs.has_python_files == 'true'
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: files
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-
-      - name: Install Bandit
-        run: pip install bandit
-
-      - name: Run Bandit Scan
-        id: bandit
-        run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
-
-      - name: Upload Bandit Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: bandit-report
-          path: bandit-report.json
-
-      - name: Summary of Security Checks
-        run: |
-          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
-            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
-            echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
-            echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
-            cat bandit-report.json | jq '.results[] | select(.issue_severity == "HIGH")' >> $GITHUB_STEP_SUMMARY
-          fi
-
-  Code-Unit-Testing:
+  Javascript-Unit-Testing:
     runs-on: ubuntu-latest
     needs: check-js-files
     if: needs.check-js-files.outputs.has_js_files == 'true'
@@ -184,7 +109,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -211,6 +136,82 @@ jobs:
           else
             echo "Some unit tests failed. See details below:" >> $GITHUB_STEP_SUMMARY
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append test output to summary
+          fi
+
+  Python-Safety-Scan:
+    runs-on: ubuntu-latest
+    needs: check-python-files
+    if: needs.check-python-files.outputs.has_python_files == 'true'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Safety CLI to check for vulnerabilities
+        id: safety
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          args: --detailed-output # To always see detailed output from this action
+
+      - name: Summary of Security Checks
+        run: |
+          if [ "${{ steps.safety.outcome }}" == "success" ]; then
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  Python-Bandit-Scan:
+    runs-on: ubuntu-latest
+    needs: check-python-files
+    if: needs.check-python-files.outputs.has_python_files == 'true'
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit Scan
+        id: bandit
+        run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+      - name: Summary of Security Checks
+        run: |
+          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
+            cat bandit-report.json | jq '.results[] | select(.issue_severity == "HIGH")' >> $GITHUB_STEP_SUMMARY
           fi
 
   # Snyk-Code-Scan:
@@ -250,7 +251,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -277,7 +278,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -302,13 +303,14 @@ jobs:
 
       - name: Summarize Grype Scan Results
         run: |
-          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
+          if [ "${{ steps.grype.outcome }}" == "success" ]; then
             echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
             echo "- Grype scan completed successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
             echo "- High severity issues found." >> $GITHUB_STEP_SUMMARY
           fi
+
   # Snyk-Container-Scan:
   #   needs: Docker-Build
   #   runs-on: ubuntu-latest
@@ -316,7 +318,7 @@ jobs:
   #   defaults:
   #     run:
   #       shell: bash
-  #       working-directory: files
+  #       working-directory: ${{ vars.APP_FOLDER }}
 
   #   steps:
   #     - name: Checkout
@@ -354,7 +356,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -417,7 +419,7 @@ jobs:
 
   #   defaults:
   #     run:
-  #       working-directory: files
+  #       working-directory: ${{ vars.APP_FOLDER }}
 
   #   steps:
   #     - name: Update Pull Request

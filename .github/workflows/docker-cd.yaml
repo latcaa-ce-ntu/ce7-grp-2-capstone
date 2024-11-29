@@ -9,7 +9,7 @@ on:
     tags:
       - "v*"
     paths:
-      - "files/**"
+      - "${{ vars.APP_FOLDER }}/**"
 
 env:
   REGISTRY: ghcr.io
@@ -20,7 +20,6 @@ permissions:
   contents: read # This is required for actions/checkout
   packages: write
   attestations: write
-  # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
   Docker-Push:
@@ -28,7 +27,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: files
+        working-directory: ${{ vars.APP_FOLDER }}
 
     steps:
       - name: Checkout
@@ -53,8 +52,8 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: ./files/
-          file: ./files/Dockerfile
+          context: ./${{ vars.APP_FOLDER }}/
+          file: ./${{ vars.APP_FOLDER }}/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}.${{ github.run_number }}
           # tags: ${{ steps.meta.outputs.tags }}
