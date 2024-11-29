@@ -13,7 +13,10 @@ resource "kubernetes_secret" "ghcr_auth" {
     ".dockerconfigjson" = jsonencode({
       auths = {
         "ghcr.io" = {
-          auth = base64encode(var.github_token)
+          username = "lann87"
+          password = var.github_token
+          auth     = base64encode("lann87:${var.github_token}")
+          email    = "alanpeh87@gmail.com"
         }
       }
     })
@@ -54,24 +57,65 @@ resource "kubernetes_deployment" "application" {
           name  = "${var.name_prefix}-my-app"
           image = "ghcr.io/latcaa-ce-ntu/ce7-grp-2-the-great-laugh:d17909ad49a1692873e796c4e89e3063ea24061d.2"
 
+          env {
+            name  = "FLASK_APP"
+            value = "jokes_app.py"
+          }
+          env {
+            name  = "FLASK_RUN_HOST"
+            value = "0.0.0.0"
+          }
+
           port {
-            container_port = 80
+            container_port = 5000
+            protocol       = "TCP"
           }
 
           resources {
             limits = {
-              cpu    = "0.5"
-              memory = "512Mi"
+              cpu    = "500m"
+              memory = "1Gi"
             }
             requests = {
-              cpu    = "0.25"
-              memory = "256Mi"
+              cpu    = "250m"
+              memory = "512Mi"
             }
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 5000
+            }
+            initial_delay_seconds = 45
+            period_seconds        = 10
+            failure_threshold     = 3
+            timeout_seconds       = 3
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = 5000
+            }
+            initial_delay_seconds = 30
+            period_seconds        = 10
+            failure_threshold     = 3
+            timeout_seconds       = 3
           }
         }
       }
     }
   }
+
+  timeouts {
+    create = "10m"
+  }
+
+  depends_on = [
+    aws_eks_node_group.ce7_grp_2_node_group,
+    kubernetes_namespace.apps
+  ]
 }
 
 resource "kubernetes_service" "application" {
@@ -86,10 +130,10 @@ resource "kubernetes_service" "application" {
     }
 
     port {
-      port        = 80 # Port the service listens on
-      target_port = 80 # Port your container exposes
+      port        = 80   # Port the service listens on
+      target_port = 5000 # Port your container exposes
     }
 
-    type = "NodePort" # This allows external access via node ports
+    type = "LoadBalancer" # This allows external access via Load Balancer
   }
 }
