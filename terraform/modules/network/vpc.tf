@@ -36,7 +36,7 @@ resource "aws_nat_gateway" "nat_gw" {
 }
 
 
-data "aws_vpc" "main_vpc" {
-  # Retrieves the details of the created VPC using its ID
-  id = aws_vpc.main_vpc.id
-}
+# data "aws_vpc" "main_vpc" {
+#   # Retrieves the details of the created VPC using its ID
+#   id = aws_vpc.main_vpc.id
+# }

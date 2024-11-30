@@ -30,18 +30,17 @@ variable "pvt_azs" {
   default     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
-variable "region" {
-  description = "aws region"
-  type        = string
-  default     = "us-east-1"
-}
+# variable "region" {
+#   description = "aws region"
+#   type        = string
+#   default     = "us-east-1"
+# }
 
-variable "allowed_ingress_cidr" {
-  description = "CIDR block allowed for ingress to sec grp"
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
+# variable "allowed_ingress_cidr" {
+#   description = "CIDR block allowed for ingress to sec grp"
+#   type        = string
+#   default     = "0.0.0.0/0"
+# }
 variable "name_prefix" {
   description = "Prefix to be added to resource names"
   type        = string

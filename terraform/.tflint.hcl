@@ -1,12 +1,12 @@
 plugin "terraform" {
   enabled = true
-  preset  = "recommended"
+  preset = "recommended"
 }
 
 plugin "aws" {
   enabled = true
   version = "0.27.0"
-  source  = "github.com/terraform-linters/tflint-ruleset-aws"
+  source = "github.com/terraform-linters/tflint-ruleset-aws"
   deep_check = false
 }
 
@@ -24,5 +24,9 @@ rule "aws_iam_role_policy_invalid_name" {
 }
 
 rule "terraform_required_providers" {
+  enabled = false
+}
+
+rule "terraform_required_version" {
   enabled = false
 }

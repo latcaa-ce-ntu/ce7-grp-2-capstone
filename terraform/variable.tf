@@ -41,22 +41,11 @@ variable "allowed_ingress_cidr" {
   default     = "0.0.0.0/0"
 }
 
-variable "github_org" {
-  description = "GitHub organization name"
-  type        = string
-}
-
 variable "github_token" {
   description = "GitHub Personal Access Token with organization package access"
   type        = string
   sensitive   = true
 }
-
-# # Elastic Container Repo Variables
-# variable "ecr_repository_url" {
-#   type    = string
-#   default = "public.ecr.aws/sctp-sandbox/ce7-grp-2-webapp-test2"
-# }
 
 variable "name_prefix" {
   description = "Prefix to be added to resource names"
