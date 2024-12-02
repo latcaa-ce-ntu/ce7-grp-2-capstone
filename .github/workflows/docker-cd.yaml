@@ -176,7 +176,7 @@ jobs:
                 spec:
                   containers:
                   - name: ${{ env.IMAGE_NAME }}
-                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ process.env.LATEST_TAG }}.${{ github.run_number }}
+                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
             EOF
 
       - name: Apply Deployment file
