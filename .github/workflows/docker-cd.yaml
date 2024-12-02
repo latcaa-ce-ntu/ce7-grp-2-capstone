@@ -242,3 +242,53 @@ jobs:
       - name: Apply Deployment file
         run: |
           kubectl apply -f deployment.yaml
+
+  Create-Service:
+    needs: Create-Deployment
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Set up kubectl
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Create Service file
+        if: ${{ github.ref_name }} == 'dev'
+        run: |
+          cat <<EOF > service.yaml
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: ${{ env.IMAGE_NAME }}
+            namespace: ${{ github.ref_name }}
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: nlb
+              service.beta.kubernetes.io/aws-load-balancer-internal: "false"
+              service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+          spec:
+            type: LoadBalancer
+            ports:
+              - name: web
+                port: 80
+                targetPort: 5000
+            selector:
+              app: ${{ env.IMAGE_NAME }}
+          EOF
+
+    - name: Apply Service file
+        run: |
+          kubectl apply -f service.yaml
