@@ -275,7 +275,6 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Service file
-        if: ${{ github.ref_name }} == 'dev'
         run: |
           cat <<EOF > service.yaml
           kind: Service
@@ -301,3 +300,35 @@ jobs:
       - name: Apply Service file
         run: |
           kubectl apply -f service.yaml
+
+  Create-Route53:
+    needs: Create-Service
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_FOLDER }}
+
+      - name: Create Route 53 CNAME Record
+        run: |
+          # Wait for the LoadBalancer to get an external IP
+          sleep 30 # Adjust this duration as necessary
+
+          # Get the external IP of the LoadBalancer
+          EXTERNAL_IP=$(kubectl get svc -n ${{ github.ref_name }} | grep ${{ env.IMAGE_NAME }} | awk '{print $4}')
+
+          # Get Hosted Zone ID
+          ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
+
+          # Create a CNAME record in Route 53
+          aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
+            "Changes": [{
+              "Action": "UPSERT",
+              "ResourceRecordSet": {
+                "Name": "ce7-grp-2-app",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": ["'"$EXTERNAL_IP"'"]
+              }
+            }]
+          }'
