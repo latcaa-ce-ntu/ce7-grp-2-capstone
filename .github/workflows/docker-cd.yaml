@@ -289,6 +289,6 @@ jobs:
               app: ${{ env.IMAGE_NAME }}
           EOF
 
-    - name: Apply Service file
-        run: |
-          kubectl apply -f service.yaml
+      - name: Apply Service file
+          run: |
+            kubectl apply -f service.yaml
