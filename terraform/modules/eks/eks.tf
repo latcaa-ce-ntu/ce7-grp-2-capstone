@@ -1,48 +1,50 @@
-# Define the main EKS cluster resource
+# Create the main EKS cluster
 resource "aws_eks_cluster" "ce7_grp_2_eks" {
-  name     = "${var.name_prefix}-eks-cluster"  # Name in AWS Console and kubectl
-  role_arn = aws_iam_role.eks_cluster_role.arn # This role allows EKS to create and manage resources like load balancers and EC2 instances
-  version  = "1.31"
+  name     = "${var.name_prefix}-eks-cluster"
+  role_arn = aws_iam_role.eks_cluster_role.arn # IAM role for cluster management
+  version  = "1.31"                            # Kubernetes version
 
-  # Configure the networking settings for the EKS cluster
+  # Network settings for the cluster
   vpc_config {
-    subnet_ids              = var.subnet_ids
-    endpoint_private_access = true                                   # Allow access to the Kubernetes API server from within the VPC
-    endpoint_public_access  = true                                   # Allow access to the Kubernetes API server from the internet
-    security_group_ids      = [aws_security_group.eks_cluster_sg.id] # These security groups define inbound and outbound traffic rules
+    subnet_ids              = var.subnet_ids                         # Subnets where cluster resources will be placed
+    endpoint_private_access = true                                   # Allow internal VPC access to Kubernetes API
+    endpoint_public_access  = true                                   # Allow internet access to Kubernetes API
+    security_group_ids      = [aws_security_group.eks_cluster_sg.id] # Network access rules
   }
 
+  # Ensure IAM role and security group are ready before creating cluster
   depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policy, # This prevents race conditions where the cluster might try to use the role before it's ready
+    aws_iam_role_policy_attachment.eks_cluster_policy,
     aws_security_group.eks_cluster_sg
   ]
 }
 
-# EKS Self-managed via EC2
+# Create group of worker nodes to run applications
 resource "aws_eks_node_group" "ce7_grp_2_node_group" {
   cluster_name    = aws_eks_cluster.ce7_grp_2_eks.name
   node_group_name = "${var.name_prefix}-node-group"
-  node_role_arn   = aws_iam_role.eks_node_role.arn # Allows nodes permission to interact with AWS Services
-  subnet_ids      = var.private_subnet_ids         # Nodes are placed in Pvt Subnets
+  node_role_arn   = aws_iam_role.eks_node_role.arn # IAM role for node permissions
+  subnet_ids      = var.private_subnet_ids         # Place nodes in private subnets for security
 
+  # Configure auto-scaling for nodes
   scaling_config {
-    desired_size = 2
-    max_size     = 3 # Max no. of nodes during high load
-    min_size     = 1 # Min no. of nodes to maintain
+    desired_size = 2 # Normal running nodes
+    max_size     = 3 # Maximum during high load
+    min_size     = 1 # Minimum to maintain
   }
 
+  # Use launch template for node configuration
   launch_template {
     version = aws_launch_template.eks_nodes.latest_version
     name    = aws_launch_template.eks_nodes.name
   }
 
-  instance_types = ["t3.medium"]
+  instance_types = ["t3.medium"] # AWS instance type for nodes
 
+  # Ensure required policies and cluster exist
   depends_on = [
     aws_iam_role_policy_attachment.eks_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
-    # node_policy = basic nodes operations
-    # cni_policy = Networking functionality
     aws_eks_cluster.ce7_grp_2_eks
   ]
 
@@ -82,3 +84,20 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 EOF
   )
 }
+
+# This file creates and manages our EKS (Kubernetes) cluster in AWS:
+#
+# 1. Creates the main EKS cluster
+#    - Runs Kubernetes version 1.31
+#    - Can be accessed from both inside VPC and internet
+#    - Uses security groups to control network access
+#
+# 2. Sets up worker nodes (EC2 instances) to run our applications
+#    - Uses t3.medium instances in private subnets
+#    - Can scale between 1-3 nodes (normally runs 2)
+#    - Uses launch template for consistent node setup
+#
+# 3. Launch template configures how new nodes are created
+#    - Sets up required security groups
+#    - Adds proper Kubernetes tags
+#    - Includes bootstrap script to join cluster
