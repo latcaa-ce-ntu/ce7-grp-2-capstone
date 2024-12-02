@@ -74,7 +74,7 @@ jobs:
       #       type=semver,pattern={{version}}
 
       - name: Build and push Docker image
-        if: ${{ github.ref_name }} == 'dev'
+        if: ${{ github.ref_name == 'dev' }}
         id: pushdev
         uses: docker/build-push-action@v6
         with:
@@ -128,7 +128,7 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Deployment file
-        if: ${{ github.ref_name }} == 'dev'
+        if: ${{ github.ref_name  == 'dev' }}
         env:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
         run: |
@@ -268,7 +268,8 @@ jobs:
       - name: Get LB security group id
         id: sg_id
         run: |
-          echo "SG_ID=$("aws ec2 describe-security-groups --filters "Name=tag:Name,Values=ce7-grp-2-lb-sg" --query "SecurityGroups[*].GroupId" --output text)" >> "$GITHUB_OUTPUT"
+          SG_ID=$(aws ec2 describe-security-groups --filters "Name=tag:Name,Values=ce7-grp-2-lb-sg" --query "SecurityGroups[*].GroupId" --output text)
+          echo "SG_ID=$SG_ID" >> "$GITHUB_OUTPUT"
 
       - name: Set up kubectl
         run: |
@@ -325,6 +326,32 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Route 53 CNAME Record
+        if: ${{ github.ref_name == 'dev' || github.ref_name == 'uat' }}
+        run: |
+          # Wait for the LoadBalancer to get an external IP
+          sleep 30 # Adjust this duration as necessary
+
+          # Get the external IP of the LoadBalancer
+          EXTERNAL_IP=$(kubectl get svc -n ${{ github.ref_name }} | grep ${{ env.IMAGE_NAME }} | awk '{print $4}')
+
+          # Get Hosted Zone ID
+          ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
+
+          # Create a CNAME record in Route 53
+          aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
+            "Changes": [{
+              "Action": "UPSERT",
+              "ResourceRecordSet": {
+                "Name": "ce7-grp-2-app-${{ github.ref_name }}",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": ["'"$EXTERNAL_IP"'"]
+              }
+            }]
+          }'
+
+      - name: Create Route 53 CNAME Record
+        if: ${{ github.ref_name == 'prod' }}
         run: |
           # Wait for the LoadBalancer to get an external IP
           sleep 30 # Adjust this duration as necessary
