@@ -9,7 +9,7 @@ on:
     tags:
       - "v*"
     paths:
-      - "${{ vars.APP_FOLDER }}/**"
+      - "files/**"
 
 env:
   REGISTRY: ${{ vars.REGISTRY }}
