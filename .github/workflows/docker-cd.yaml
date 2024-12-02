@@ -149,10 +149,10 @@ jobs:
                     app: ${{ env.IMAGE_NAME }}
                 spec:
                   containers:
-                  - name: ${{ env.IMAGE_NAME }}
-                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-                    ports:
-                    - containerPort: 5000
+                    - name: ${{ env.IMAGE_NAME }}
+                      image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                      ports:
+                        - containerPort: 5000
             EOF
             cat deployment.yaml
 
@@ -178,10 +178,10 @@ jobs:
                     app: ${{ env.IMAGE_NAME }}
                 spec:
                   containers:
-                  - name: ${{ env.IMAGE_NAME }}
-                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
-                    ports:
-                    - containerPort: 5000
+                    - name: ${{ env.IMAGE_NAME }}
+                      image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
+                      ports:
+                        - containerPort: 5000
             EOF
 
       - name: Apply Deployment file
