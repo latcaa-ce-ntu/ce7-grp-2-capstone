@@ -73,7 +73,7 @@ jobs:
       #     tags: |
       #       type=semver,pattern={{version}}
 
-      - name: Build and push Docker image - ${{ github.ref_name }}
+      - name: Build and push Docker image
         if: ${{ github.ref_name }} == 'dev'
         id: pushdev
         uses: docker/build-push-action@v6
@@ -85,7 +85,7 @@ jobs:
           # tags: ${{ steps.meta.outputs.tags }}
           # labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Build and push Docker image - ${{ github.ref_name }}
+      - name: Build and push Docker image
         if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
         id: pushuatprod
         uses: docker/build-push-action@v6
@@ -127,7 +127,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
-      - name: Create Deployment file - ${{ github.ref_name }}
+      - name: Create Deployment file
         if: ${{ github.ref_name }} == 'dev'
         env:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
@@ -151,9 +151,12 @@ jobs:
                   containers:
                   - name: ${{ env.IMAGE_NAME }}
                     image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                    ports:
+                    - containerPort: 5000
             EOF
+            cat deployment.yaml
 
-      - name: Create Deployment file - ${{ github.ref_name }}
+      - name: Create Deployment file
         if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
         env:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
@@ -177,6 +180,8 @@ jobs:
                   containers:
                   - name: ${{ env.IMAGE_NAME }}
                     image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
+                    ports:
+                    - containerPort: 5000
             EOF
 
       - name: Apply Deployment file
