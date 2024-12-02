@@ -133,28 +133,28 @@ jobs:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
         run: |
           cat <<EOF > deployment.yaml
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              namespace: ${{ github.ref_name }}
-              name: ${{ env.IMAGE_NAME }}
-            spec:
-              replicas: 2
-              selector:
-                matchLabels:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            namespace: ${{ github.ref_name }}
+            name: ${{ env.IMAGE_NAME }}
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: ${{ env.IMAGE_NAME }}
+            template:
+              metadata:
+                labels:
                   app: ${{ env.IMAGE_NAME }}
-              template:
-                metadata:
-                  labels:
-                    app: ${{ env.IMAGE_NAME }}
-                spec:
-                  containers:
-                    - name: ${{ env.IMAGE_NAME }}
-                      image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-                      ports:
-                        - containerPort: 5000
-            EOF
-            cat deployment.yaml
+              spec:
+                containers:
+                  - name: ${{ env.IMAGE_NAME }}
+                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                    ports:
+                      - containerPort: 5000
+          EOF
+          cat deployment.yaml
 
       - name: Create Deployment file
         if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
@@ -162,27 +162,27 @@ jobs:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
         run: |
           cat <<EOF > deployment.yaml
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              namespace: ${{ github.ref_name }}
-              name: ${{ env.IMAGE_NAME }}
-            spec:
-              replicas: 2
-              selector:
-                matchLabels:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            namespace: ${{ github.ref_name }}
+            name: ${{ env.IMAGE_NAME }}
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: ${{ env.IMAGE_NAME }}
+            template:
+              metadata:
+                labels:
                   app: ${{ env.IMAGE_NAME }}
-              template:
-                metadata:
-                  labels:
-                    app: ${{ env.IMAGE_NAME }}
-                spec:
-                  containers:
-                    - name: ${{ env.IMAGE_NAME }}
-                      image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
-                      ports:
-                        - containerPort: 5000
-            EOF
+              spec:
+                containers:
+                  - name: ${{ env.IMAGE_NAME }}
+                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}
+                    ports:
+                      - containerPort: 5000
+          EOF
 
       - name: Apply Deployment file
         run: |
