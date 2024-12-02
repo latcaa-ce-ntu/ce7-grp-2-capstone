@@ -40,11 +40,11 @@ jobs:
       - name: Get Latest Tag
         id: get_latest_tag
         run: |
-          echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> "$GITHUB_OUTPUT"
+          echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_OUTPUT
           echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)"
 
       - name: Output Latest Tag
-        run: echo "The latest tag is ${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+        run: echo "The latest tag is ${{ steps.get_latest_tag.outputs.LATEST_TAG }}" >> $GITHUB_STEP_SUMMARY
 
   Docker-Push:
     needs: Get-Tag
@@ -342,7 +342,7 @@ jobs:
             "Changes": [{
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app-${{ github.ref_name }}",
+                "Name": "ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com",
                 "Type": "CNAME",
                 "TTL": 300,
                 "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
@@ -367,7 +367,7 @@ jobs:
             "Changes": [{
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app",
+                "Name": "ce7-grp-2-app.sctp-sandbox.com",
                 "Type": "CNAME",
                 "TTL": 300,
                 "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
