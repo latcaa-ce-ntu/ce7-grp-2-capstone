@@ -247,6 +247,9 @@ jobs:
     needs: Create-Deployment
     runs-on: ubuntu-latest
 
+    outputs:
+      SG_ID: ${{ steps.sg_id.outputs.SG_ID }}
+
     defaults:
       run:
         working-directory: ${{ vars.APP_FOLDER }}
@@ -261,6 +264,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Get LB security group id
+        id: sg_id
+        run: |
+          echo "SG_ID=$("aws ec2 describe-security-groups --filters "Name=tag:Name,Values=ce7-grp-2-lb-sg" --query "SecurityGroups[*].GroupId" --output text)" >> "$GITHUB_OUTPUT"
 
       - name: Set up kubectl
         run: |
@@ -279,7 +287,7 @@ jobs:
               service.beta.kubernetes.io/aws-load-balancer-type: nlb
               service.beta.kubernetes.io/aws-load-balancer-internal: "false"
               service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
-              service.beta.kubernetes.io/aws-load-balancer-security-groups: "sg-004f50736e6f53147"
+              service.beta.kubernetes.io/aws-load-balancer-security-groups: $SG_ID
           spec:
             type: LoadBalancer
             ports:
