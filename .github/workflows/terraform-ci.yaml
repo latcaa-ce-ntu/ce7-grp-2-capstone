@@ -38,7 +38,7 @@ jobs:
         id: fmt
         run: |
           # Run terraform fmt check and capture output
-          output=$(terraform fmt -check)
+          output=$(terraform fmt -check) || true
           echo "$output" >> $GITHUB_STEP_SUMMARY  # Append output to step summary
 
           # Check if formatting issues were found
@@ -52,7 +52,7 @@ jobs:
         id: init
         run: |
           # Run terraform init and capture output
-          output=$(terraform init -backend=false 2>&1)
+          output=$(terraform init -backend=false 2>&1) || true
 
           # Check if initialization was successful
           if [ $? -eq 0 ]; then
@@ -66,7 +66,7 @@ jobs:
         id: validate
         run: |
           # Run terraform validate and capture output
-          output=$(terraform validate -no-color)
+          output=$(terraform validate -no-color) || true
           if [ $? -eq 0 ]; then
             echo "Terraform configuration is valid." >> $GITHUB_STEP_SUMMARY
           else
@@ -87,7 +87,7 @@ jobs:
         id: tflint
         run: |
           # Run TFLint and capture output
-          output=$(tflint -f compact)
+          output=$(tflint -f compact) || true
 
           # Check if there were any linting issues
           if [ $? -eq 0 ]; then

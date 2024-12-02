@@ -47,11 +47,11 @@ variable "name_prefix" {
   default     = "ce7-grp-2"
 }
 
-variable "github_org" {
-  description = "GitHub organization name"
-  type        = string
-  default     = "latcaa-ce-ntu"
-}
+# variable "github_org" {
+#   description = "GitHub organization name"
+#   type        = string
+#   default     = "latcaa-ce-ntu"
+# }
 
 variable "github_token" {
   description = "GitHub Personal Access Token with organization package access"

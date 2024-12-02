@@ -41,10 +41,10 @@ variable "allowed_ingress_cidr" {
   default     = "0.0.0.0/0"
 }
 
-variable "github_org" {
-  description = "GitHub organization name"
-  type        = string
-}
+# variable "github_org" {
+#   description = "GitHub organization name"
+#   type        = string
+# }
 
 variable "github_token" {
   description = "GitHub Personal Access Token with organization package access"
