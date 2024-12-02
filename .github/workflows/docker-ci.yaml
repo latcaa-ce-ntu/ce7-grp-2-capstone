@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "${{ vars.APP_FOLDER }}/**"
+      - "files/**"
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -191,17 +191,17 @@ jobs:
           python-version: "3.13"
 
       - name: Install Bandit
-        run: pip install bandit
+        run: pip install bandit[sarif]
 
       - name: Run Bandit Scan
         id: bandit
-        run: bandit -r . --severity-level high --confidence-level high -f json -o bandit-report.json
+        run: bandit -r . --severity-level high --confidence-level high -f sarif -o bandit-report.sarif
 
-      - name: Upload Bandit Report
-        uses: actions/upload-artifact@v4
+      - name: Upload Bandir scan SARIF report
+        if: ${{ failure() }}
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          name: bandit-report
-          path: bandit-report.json
+          sarif_file: bandit-report.sarif
 
       - name: Summary of Security Checks
         run: |
@@ -211,7 +211,6 @@ jobs:
           else
             echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
             echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
-            cat bandit-report.json | jq '.results[] | select(.issue_severity == "HIGH")' >> $GITHUB_STEP_SUMMARY
           fi
 
   # Snyk-Code-Scan:
