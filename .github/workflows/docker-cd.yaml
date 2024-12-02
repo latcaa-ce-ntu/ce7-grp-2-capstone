@@ -74,13 +74,26 @@ jobs:
       #       type=semver,pattern={{version}}
 
       - name: Build and push Docker image
+        if: ${{ github.ref_name }} == 'dev'
         id: push
         uses: docker/build-push-action@v6
         with:
           context: ./${{ vars.APP_FOLDER }}/
           file: ./${{ vars.APP_FOLDER }}/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.Get-Tag.outputs.LATEST_TAG }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Build and push Docker image
+        if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ vars.APP_FOLDER }}/
+          file: ./${{ vars.APP_FOLDER }}/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.Get-Tag.outputs.LATEST_TAG }}.${{ github.run_number }}
           # tags: ${{ steps.meta.outputs.tags }}
           # labels: ${{ steps.meta.outputs.labels }}
 
@@ -115,6 +128,9 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Deployment file
+        if: ${{ github.ref_name }} == 'dev'
+        env:
+          LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
         run: |
           cat <<EOF > deployment.yaml
             apiVersion: apps/v1
@@ -134,7 +150,33 @@ jobs:
                 spec:
                   containers:
                   - name: ${{ env.IMAGE_NAME }}
-                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.Get-Tag.outputs.LATEST_TAG }}
+                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            EOF
+
+      - name: Create Deployment file
+        if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
+        env:
+          LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
+        run: |
+          cat <<EOF > deployment.yaml
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              namespace: ${{ github.ref_name }}
+              name: ${{ env.IMAGE_NAME }}
+            spec:
+              replicas: 2
+              selector:
+                matchLabels:
+                  app: ${{ env.IMAGE_NAME }}
+              template:
+                metadata:
+                  labels:
+                    app: ${{ env.IMAGE_NAME }}
+                spec:
+                  containers:
+                  - name: ${{ env.IMAGE_NAME }}
+                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ process.env.LATEST_TAG }}.${{ github.run_number }}
             EOF
 
       - name: Apply Deployment file
