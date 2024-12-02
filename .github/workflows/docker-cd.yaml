@@ -345,7 +345,7 @@ jobs:
                 "Name": "ce7-grp-2-app-${{ github.ref_name }}",
                 "Type": "CNAME",
                 "TTL": 300,
-                "ResourceRecords": ["'"$EXTERNAL_IP"'"]
+                "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
               }
             }]
           }'
@@ -370,7 +370,7 @@ jobs:
                 "Name": "ce7-grp-2-app",
                 "Type": "CNAME",
                 "TTL": 300,
-                "ResourceRecords": ["'"$EXTERNAL_IP"'"]
+                "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
               }
             }]
           }'
