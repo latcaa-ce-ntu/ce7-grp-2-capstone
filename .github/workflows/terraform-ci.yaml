@@ -170,13 +170,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform workspace list
-        run: terraform workspace list
+      # - name: Terraform workspace list
+      #   run: terraform workspace list
 
-      - name: Terraform workspace new environment and select
-        run: |
-          terraform workspace select -or-create=true ${{ github.base_ref }}
-          terraform workspace list
+      # - name: Terraform workspace new environment and select
+      #   run: |
+      #     terraform workspace select -or-create=true ${{ github.base_ref }}
+      #     terraform workspace list
 
       - name: Terraform Plan
         id: plan
