@@ -137,9 +137,9 @@ jobs:
             --docker-email="latcaa.ntu@gmail.com" \
             --namespace="${{ github.ref_name }}"
 
-      - name: Apply secret to Kubernetes
-        run: |
-          kubectl apply -f secrets.yaml
+      # - name: Apply secret to Kubernetes
+      #   run: |
+      #     kubectl apply -f secrets.yaml
 
   Create-Deployment:
     needs: Create-Secret
