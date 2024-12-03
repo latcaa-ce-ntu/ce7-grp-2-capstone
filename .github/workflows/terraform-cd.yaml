@@ -51,11 +51,7 @@ jobs:
 
       - name: Terraform Apply
         run: |
-          terraform apply -no-color -auto-approve -var-file="${{ github.ref_name }}.tfvars" 2>&1 || true
-          echo "## Terraform Apply Output" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat plan_output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform apply -no-color -auto-approve -var-file="${{ github.ref_name }}.tfvars"
 
       - name: Export terraform outputs
         id: tfout
