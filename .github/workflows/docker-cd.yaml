@@ -127,19 +127,57 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
+      # - name: Create Docker Config JSON
+      #   run: |
+      #   cat <<EOF > config.json
+      #   {
+      #     "auths": {
+      #       "ghcr.io": {
+      #         "username": "${{ secrets.GHCR_USER }}",
+      #         "password": "${{ secrets.GHCR_TOKEN }}",
+      #         "email": "latcaa.ntu@gmail.com",
+      #         "namespace": "${{ github.ref_name }}"
+      #       }
+      #     }
+      #   }
+      #   EOF
+
+      #   cat config.json | base64 >>
+
+      # - name: Create Secret
+      #   run: |
+      #     if ! kubectl get secret ghcr-auth --namespace="${{ github.ref_name }}" > /dev/null 2>&1; then
+      #     kubectl create secret docker-registry ghcr-auth \
+      #       --docker-server=ghcr.io \
+      #       --docker-username="${{ secrets.GHCR_USER }}" \
+      #       --docker-password="${{ secrets.GHCR_TOKEN }}" \
+      #       --docker-email="latcaa.ntu@gmail.com" \
+      #       --namespace="${{ github.ref_name }}"
+
       - name: Create Secrets file
         run: |
-          if ! kubectl get secret ghcr-auth --namespace="${{ github.ref_name }}" > /dev/null 2>&1; then
-          kubectl create secret docker-registry ghcr-auth \
-            --docker-server=ghcr.io \
-            --docker-username="${{ secrets.GHCR_USER }}" \
-            --docker-password="${{ secrets.GHCR_TOKEN }}" \
-            --docker-email="latcaa.ntu@gmail.com" \
-            --namespace="${{ github.ref_name }}"
+          cat <<EOF > secrets.yaml
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ghcr-auth
+            namespace: "${{ github.ref_name }}"
+          type: kubernetes.io/dockerconfigjson
+          stringData:
+            .dockerconfigjson: |
+              {
+                "auths": {
+                  "ghcr.io": {
+                    "username": "${{ secrets.GHCR_USER }}",
+                    "password": "${{ secrets.GHCR_TOKEN }}"
+                  }
+                }
+              }
+          EOF
 
-      # - name: Apply secret to Kubernetes
-      #   run: |
-      #     kubectl apply -f secrets.yaml
+      - name: Apply secret to Kubernetes
+        run: |
+          kubectl apply -f secrets.yaml
 
   Create-Deployment:
     needs: Create-Secret
