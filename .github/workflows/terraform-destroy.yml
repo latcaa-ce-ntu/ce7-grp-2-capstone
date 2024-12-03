@@ -15,6 +15,9 @@ on:
           - uat
           - prod
 
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
 jobs:
   Terraform-Destroy:
     name: "Terraform Destroy"
