@@ -1,9 +1,32 @@
+data "aws_caller_identity" "current" {}
 
 # Wait for EKS cluster to be fully ready
-# resource "time_sleep" "wait_for_kubernetes" {
-#   depends_on      = [aws_eks_cluster.ce7_grp_2_eks]
-#   create_duration = "20s" # Pause to ensure cluster is stable
-# }
+resource "time_sleep" "wait_for_kubernetes" {
+  depends_on      = [aws_eks_cluster.ce7_grp_2_eks]
+  create_duration = "20s" # Pause to ensure cluster is stable
+}
+
+# Create namespace to organize our applications
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    name = "dev"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
+
+resource "kubernetes_namespace" "uat" {
+  metadata {
+    name = "uat"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
+
+resource "kubernetes_namespace" "prod" {
+  metadata {
+    name = "prod"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
 
 # Create IAM role that can be assumed by Kubernetes service accounts
 resource "aws_iam_role" "app_role" {
@@ -29,69 +52,27 @@ resource "aws_iam_role" "app_role" {
   })
 }
 
-# # Create Kubernetes service account for our application
-# resource "kubernetes_service_account" "dev_service_account" {
-#   metadata {
-#     name      = "${var.name_prefix}-sa-dev"
-#     namespace = kubernetes_namespace.dev.metadata[0].name
-#     annotations = {
-#       # Link to IAM role for AWS permissions
-#       "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn
-#     }
-#   }
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "dev_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-app"
+    namespace = kubernetes_namespace.dev.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn
+    }
+  }
 
-#   # Add GitHub container registry credentials
-#   image_pull_secret {
-#     name = kubernetes_secret.ghcr_auth.metadata[0].name
-#   }
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
 
-#   depends_on = [
-#     kubernetes_namespace.dev,
-#     aws_iam_role.app_role
-#   ]
-# }
-
-# resource "kubernetes_service_account" "uat_service_account" {
-#   metadata {
-#     name      = "${var.name_prefix}-sa-uat"
-#     namespace = kubernetes_namespace.uat.metadata[0].name
-#     annotations = {
-#       # Link to IAM role for AWS permissions
-#       "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn
-#     }
-#   }
-
-#   # Add GitHub container registry credentials
-#   image_pull_secret {
-#     name = kubernetes_secret.ghcr_auth.metadata[0].name
-#   }
-
-#   depends_on = [
-#     kubernetes_namespace.uat,
-#     aws_iam_role.app_role
-#   ]
-# }
-
-# resource "kubernetes_service_account" "prod_service_account" {
-#   metadata {
-#     name      = "${var.name_prefix}-sa-prod"
-#     namespace = kubernetes_namespace.prod.metadata[0].name
-#     annotations = {
-#       # Link to IAM role for AWS permissions
-#       "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn
-#     }
-#   }
-
-#   # Add GitHub container registry credentials
-#   image_pull_secret {
-#     name = kubernetes_secret.ghcr_auth.metadata[0].name
-#   }
-
-#   depends_on = [
-#     kubernetes_namespace.prod,
-#     aws_iam_role.app_role
-#   ]
-# }
+  depends_on = [
+    kubernetes_namespace.dev,
+    aws_iam_role.app_role
+  ]
+}
 
 # # Kubernetes Service Account and IAM Integration
 # #

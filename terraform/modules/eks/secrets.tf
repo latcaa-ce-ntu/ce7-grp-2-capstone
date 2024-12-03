@@ -1,5 +1,3 @@
-# data "aws_caller_identity" "current" {}
-
 # # Create a Kubernetes secret for GHCR authentication
 # resource "kubernetes_secret" "ghcr_auth" {
 #   metadata {
