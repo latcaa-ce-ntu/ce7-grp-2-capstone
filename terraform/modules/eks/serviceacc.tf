@@ -6,7 +6,7 @@ resource "time_sleep" "wait_for_kubernetes" {
   create_duration = "20s" # Pause to ensure cluster is stable
 }
 
-# Create namespace to organize our applications
+# Create namespaces to organize our applications
 resource "kubernetes_namespace" "dev" {
   metadata {
     name = "dev"
@@ -28,7 +28,7 @@ resource "kubernetes_namespace" "prod" {
   depends_on = [time_sleep.wait_for_kubernetes]
 }
 
-# Create IAM role that can be assumed by Kubernetes service accounts
+# Create IAM roles that can be assumed by Kubernetes service accounts
 resource "aws_iam_role" "app_role_dev" {
   name = "${var.name_prefix}-app-role-dev"
 
@@ -52,7 +52,7 @@ resource "aws_iam_role" "app_role_dev" {
   })
 }
 
-# Create IAM role that can be assumed by Kubernetes service accounts
+# Create IAM roles that can be assumed by Kubernetes service accounts
 resource "aws_iam_role" "app_role_uat" {
   name = "${var.name_prefix}-app-role-uat"
 
