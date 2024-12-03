@@ -23,13 +23,24 @@ provider "aws" {
   }
 }
 
-provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.kubeconfig_certificate_authority_data)
+data "aws_eks_cluster" "cluster" {
+  name = "${var.name_prefix}-eks-cluster"
+}
 
-  exec {
-    api_version = "client.authentication.k8s.io/v1"
-    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
-    command     = "aws"
-  }
+data "aws_eks_cluster_auth" "cluster" {
+  name = "${var.name_prefix}-eks-cluster"
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  token                  = data.aws_eks_cluster_auth.cluster.token
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  
+  # host                   = module.eks.cluster_endpoint
+  # cluster_ca_certificate = base64decode(module.eks.kubeconfig_certificate_authority_data)
+  # exec {
+  #   api_version = "client.authentication.k8s.io/v1beta1"
+  #   args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  #   command     = "aws"
+  # }
 }
