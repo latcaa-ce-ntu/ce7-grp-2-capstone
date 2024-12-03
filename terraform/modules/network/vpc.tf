@@ -22,6 +22,10 @@ resource "aws_internet_gateway" "igw" {
 # Allocates a static public IP address that will be used by the NAT Gateway
 resource "aws_eip" "nat" {
   domain = "vpc"
+
+  tags = {
+    Name = "${var.name_prefix}-eip"
+  }
 }
 
 # NAT Gateway Configuration

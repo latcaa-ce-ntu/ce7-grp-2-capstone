@@ -2,6 +2,10 @@
 resource "aws_s3_bucket" "lb_logs" {
   bucket        = "${var.name_prefix}-alb-logs"
   force_destroy = true # Allows bucket deletion even when it contains objects
+
+  tags = {
+    Name = "${var.name_prefix}-alb-logs"
+  }
 }
 
 # Block all public access to the bucket for security 

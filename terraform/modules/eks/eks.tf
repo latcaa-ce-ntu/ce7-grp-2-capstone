@@ -17,6 +17,10 @@ resource "aws_eks_cluster" "ce7_grp_2_eks" {
     aws_iam_role_policy_attachment.eks_cluster_policy,
     aws_security_group.eks_cluster_sg
   ]
+
+  tags = {
+    Name = "${var.name_prefix}-eks-cluster"
+  }
 }
 
 # Create group of worker nodes to run applications

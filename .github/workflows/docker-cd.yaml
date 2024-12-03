@@ -104,8 +104,48 @@ jobs:
       #     subject-digest: ${{ steps.push.outputs.digest }}
       #     push-to-registry: true
 
-  Create-Deployment:
+  Create-Secret:
     needs: Docker-Push
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Set up kubectl
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Create Secrets file
+        run: |
+          cat <<EOF > secrets.yaml
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ghcr-auth
+            namespace: ${{ github.ref_name }}
+          type: kubernetes.io/dockerconfigjson
+          data:
+            .dockerconfigjson: $(echo -n '{"auths":{"ghcr.io":{"auth":"$(echo -n '${{ secrets.GHCR_USER }}:${{ secrets.GHCR_TOKEN }}' | base64)"}}}' | base64)
+          EOF
+
+      - name: Apply secret to Kubernetes
+        run: |
+          kubectl apply -f secrets.yaml --kubeconfig kubeconfig
+
+  Create-Deployment:
+    needs: Create-Secret
     runs-on: ubuntu-latest
 
     defaults:
@@ -148,6 +188,8 @@ jobs:
                 labels:
                   app: ${{ env.IMAGE_NAME }}
               spec:
+                imagePullSecrets:
+                  - name: ghcr-auth
                 containers:
                   - name: ${{ env.IMAGE_NAME }}
                     image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
@@ -204,6 +246,8 @@ jobs:
                 labels:
                   app: ${{ env.IMAGE_NAME }}
               spec:
+                imagePullSecrets:
+                  - name: ghcr-auth
                 containers:
                   - name: ${{ env.IMAGE_NAME }}
                     image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}.${{ github.run_number }}

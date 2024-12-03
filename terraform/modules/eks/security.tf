@@ -5,9 +5,9 @@ resource "aws_security_group" "eks_cluster_sg" {
 
   # Allow all traffic within the security group
   ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -50,13 +50,13 @@ resource "aws_security_group" "lb_sg" {
 
 # Allow traffic from LB to NodePort range
 resource "aws_security_group_rule" "nodeport_from_lb" {
-  type              = "ingress"
-  from_port         = 30000
-  to_port           = 32767
-  protocol          = "tcp"
-  security_group_id = aws_security_group.eks_cluster_sg.id
+  type                     = "ingress"
+  from_port                = 30000
+  to_port                  = 32767
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.eks_cluster_sg.id
   source_security_group_id = aws_security_group.lb_sg.id
-  description       = "Allow NodePort access from LB"
+  description              = "Allow NodePort access from LB"
 }
 
 # Network Security Configuration for EKS and Load Balancer
