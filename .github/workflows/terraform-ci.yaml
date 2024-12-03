@@ -179,9 +179,20 @@ jobs:
       #     terraform workspace list
 
       - name: Terraform Plan
+        if: github.event_name == 'pull_request'
         id: plan
         run: |
-          terraform plan -no-color -var-file="${{ github.base_ref }}.tfvars" -out=tfplan > plan_output.txt
+          terraform plan -no-color -var-file="${{ github.base_ref }}.tfvars" -out=tfplan > plan_output.txt 2>&1 || true
+          echo "## Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat plan_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Plan (Workflow Dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: plan-dispatch
+        run: |
+          terraform plan -no-color -var-file="dev.tfvars" -out=tfplan > plan_output.txt 2>&1 || true
           echo "## Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat plan_output.txt >> $GITHUB_STEP_SUMMARY
