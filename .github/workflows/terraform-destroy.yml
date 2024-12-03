@@ -7,13 +7,13 @@ on:
       confirmation:
         description: "type DESTROY to confirm"
         required: true
-      choice:
-        type: choice
-        description: Select the environment
-        options:
-          - dev
-          - uat
-          - prod
+      # choice:
+      #   type: choice
+      #   description: Select the environment
+      #   options:
+      #     - dev
+      #     - uat
+      #     - prod
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -48,15 +48,15 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform workspace list
-        run: terraform workspace list
+      # - name: Terraform workspace list
+      #   run: terraform workspace list
 
-      - name: Terraform workspace new environment and select
-        env:
-          WORKSPACE_NAME: ${{ github.event.inputs.choice }}
-        run: |
-          terraform workspace select $WORKSPACE_NAME || terraform workspace new $WORKSPACE_NAME
-          terraform workspace list
+      # - name: Terraform workspace new environment and select
+      #   env:
+      #     WORKSPACE_NAME: ${{ github.event.inputs.choice }}
+      #   run: |
+      #     terraform workspace select $WORKSPACE_NAME || terraform workspace new $WORKSPACE_NAME
+      #     terraform workspace list
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.confirmation }} == "DESTROY"

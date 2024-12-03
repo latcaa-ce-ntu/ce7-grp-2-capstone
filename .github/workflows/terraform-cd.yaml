@@ -41,13 +41,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform workspace list
-        run: terraform workspace list
+      # - name: Terraform workspace list
+      #   run: terraform workspace list
 
-      - name: Terraform workspace new environment and select
-        run: |
-          terraform workspace select ${{ github.ref_name }} || terraform workspace new ${{ github.ref_name }}
-          terraform workspace list
+      # - name: Terraform workspace new environment and select
+      #   run: |
+      #     terraform workspace select ${{ github.ref_name }} || terraform workspace new ${{ github.ref_name }}
+      #     terraform workspace list
 
       - name: Terraform Apply
         run: terraform apply -no-color -auto-approve -var-file="${{ github.ref_name }}.tfvars"
