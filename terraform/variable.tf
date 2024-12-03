@@ -46,11 +46,11 @@ variable "allowed_ingress_cidr" {
 #   type        = string
 # }
 
-variable "github_token" {
-  description = "GitHub Personal Access Token with organization package access"
-  type        = string
-  sensitive   = true
-}
+# variable "github_token" {
+#   description = "GitHub Personal Access Token with organization package access"
+#   type        = string
+#   sensitive   = true
+# }
 
 # # Elastic Container Repo Variables
 # variable "ecr_repository_url" {

@@ -53,8 +53,8 @@ variable "name_prefix" {
 #   default     = "latcaa-ce-ntu"
 # }
 
-variable "github_token" {
-  description = "GitHub Personal Access Token with organization package access"
-  type        = string
-  sensitive   = true
-}
+# variable "github_token" {
+#   description = "GitHub Personal Access Token with organization package access"
+#   type        = string
+#   sensitive   = true
+# }

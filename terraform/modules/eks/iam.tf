@@ -1,8 +1,8 @@
-# EC2 node IAM role and policies
+# Create IAM role for EKS cluster management
 resource "aws_iam_role" "eks_cluster_role" {
   name = "${var.name_prefix}-eks-cluster-role"
 
-  # Trust policy allowing EKS service to assume this role
+  # Trust policy - defines who can assume this role
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -17,16 +17,17 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 }
 
-# Attached the EKS cluster policy to the cluster role
+# Attach required EKS cluster policy to cluster role
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_cluster_role.name
 }
 
-# IAM role for the EKS node group
+# Create IAM role for EKS worker nodes
 resource "aws_iam_role" "eks_node_role" {
   name = "${var.name_prefix}-eks-node-role"
 
+  # Trust policy for EC2 instances (worker nodes)
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -41,20 +42,30 @@ resource "aws_iam_role" "eks_node_role" {
   })
 }
 
-# - eks_node_policy: Basic node operations
+# Attach required policies to node role
+# Worker node policy - basic node operations
 resource "aws_iam_role_policy_attachment" "eks_node_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_node_role.name
 }
 
-# - eks_cni_policy: Networking functionality
+# CNI policy - networking functionality
 resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.eks_node_role.name
 }
 
-# - eks_container_registry: Access to Amazon ECR for pulling container images
+# Container registry policy - allows pulling images from ECR
 resource "aws_iam_role_policy_attachment" "eks_container_registry" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node_role.name
 }
+
+# This file manages IAM (Identity and Access Management) for our EKS cluster:
+#
+# 1. Creates and configures EKS cluster role
+#    - Allows EKS to manage AWS resources
+# 2. Creates and configures Node role
+#    - Allows worker nodes to access AWS services
+#    - Includes policies for container operations
+#    - Enables networking features
