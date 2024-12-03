@@ -129,14 +129,13 @@ jobs:
 
       - name: Create Secrets file
         run: |
-          echo "apiVersion: v1" > secrets.yaml
-          echo "kind: Secret" >> secrets.yaml
-          echo "metadata:" >> secrets.yaml
-          echo "  name: ghcr-auth" >> secrets.yaml
-          echo "  namespace: ${{ github.ref_name }}" >> secrets.yaml
-          echo "type: kubernetes.io/dockerconfigjson" >> secrets.yaml
-          echo "data:" >> secrets.yaml
-          echo "  .dockerconfigjson: $(echo -n '{\"auths\":{\"ghcr.io\":{\"auth\":\"$(echo -n '${{ secrets.GHCR_USER }}:${{ secrets.GHCR_TOKEN }}' | base64)\"}}}' | base64)" >> secrets.yaml
+          if ! kubectl get secret ghcr-auth --namespace="${{ github.ref_name }}" > /dev/null 2>&1; then
+          kubectl create secret docker-registry ghcr-auth \
+            --docker-server=ghcr.io \
+            --docker-username="${{ secrets.GHCR_USER }}" \
+            --docker-password="${{ secrets.GHCR_TOKEN }}" \
+            --docker-email="latcaa.ntu@gmail.com" \
+            --namespace="${{ github.ref_name }}"
 
       - name: Apply secret to Kubernetes
         run: |

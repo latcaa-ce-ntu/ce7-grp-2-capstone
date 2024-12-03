@@ -12,6 +12,10 @@ resource "aws_eks_cluster" "ce7_grp_2_eks" {
     security_group_ids      = [aws_security_group.eks_cluster_sg.id] # Network access rules
   }
 
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP" # Options: API, CONFIG_MAP, or API_AND_CONFIG_MAP
+  }
+
   # Ensure IAM role and security group are ready before creating cluster
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy,
