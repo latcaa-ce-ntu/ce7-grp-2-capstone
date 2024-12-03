@@ -29,8 +29,8 @@ resource "kubernetes_namespace" "prod" {
 }
 
 # Create IAM role that can be assumed by Kubernetes service accounts
-resource "aws_iam_role" "app_role" {
-  name = "${var.name_prefix}-app-role"
+resource "aws_iam_role" "app_role_dev" {
+  name = "${var.name_prefix}-app-role-dev"
 
   # Trust policy allowing Kubernetes service accounts to assume this role
   assume_role_policy = jsonencode({
@@ -45,7 +45,55 @@ resource "aws_iam_role" "app_role" {
       Condition = {
         StringEquals = {
           # Ensure only our specific service account can assume this role
-          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-app"
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-dev"
+        }
+      }
+    }]
+  })
+}
+
+# Create IAM role that can be assumed by Kubernetes service accounts
+resource "aws_iam_role" "app_role_uat" {
+  name = "${var.name_prefix}-app-role-uat"
+
+  # Trust policy allowing Kubernetes service accounts to assume this role
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        # Use OIDC provider for secure authentication
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}"
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          # Ensure only our specific service account can assume this role
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-uat"
+        }
+      }
+    }]
+  })
+}
+
+# Create IAM role that can be assumed by Kubernetes service accounts
+resource "aws_iam_role" "app_role_prod" {
+  name = "${var.name_prefix}-app-role-prod"
+
+  # Trust policy allowing Kubernetes service accounts to assume this role
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        # Use OIDC provider for secure authentication
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}"
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          # Ensure only our specific service account can assume this role
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-prod"
         }
       }
     }]
@@ -55,11 +103,11 @@ resource "aws_iam_role" "app_role" {
 # Create Kubernetes service account for our application
 resource "kubernetes_service_account" "dev_service_account" {
   metadata {
-    name      = "${var.name_prefix}-app"
+    name      = "${var.name_prefix}-sa-app-dev"
     namespace = kubernetes_namespace.dev.metadata[0].name
     annotations = {
       # Link to IAM role for AWS permissions
-      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role.arn
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_dev.arn
     }
   }
 
@@ -70,7 +118,51 @@ resource "kubernetes_service_account" "dev_service_account" {
 
   depends_on = [
     kubernetes_namespace.dev,
-    aws_iam_role.app_role
+    aws_iam_role.app_role_dev
+  ]
+}
+
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "uat_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-sa-app-uat"
+    namespace = kubernetes_namespace.uat.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_uat.arn
+    }
+  }
+
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
+
+  depends_on = [
+    kubernetes_namespace.uat,
+    aws_iam_role.app_role_uat
+  ]
+}
+
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "prod_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-sa-app-prod"
+    namespace = kubernetes_namespace.prod.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_prod.arn
+    }
+  }
+
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
+
+  depends_on = [
+    kubernetes_namespace.prod,
+    aws_iam_role.app_role_prod
   ]
 }
 
