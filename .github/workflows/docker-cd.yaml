@@ -365,10 +365,10 @@ jobs:
           type: now
           target_branch: uat
           github_token: ${{ secrets.GITHUB_TOKEN }}
-		  
+
   Advance-Tag-and-Release:
     if: ${{ github.ref_name == 'prod' }}
-	  needs: Create-Route53
+    needs: Create-Route53
     runs-on: ubuntu-latest
 
     defaults:
