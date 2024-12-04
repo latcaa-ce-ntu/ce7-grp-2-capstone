@@ -213,36 +213,6 @@ jobs:
             echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
           fi
 
-  # Snyk-Code-Scan:
-  #   runs-on: ubuntu-latest
-
-  #   defaults:
-  #     run:
-  #       shell: bash
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-
-  #     - name: Install Snyk CLI
-  #       run: npm install -g snyk
-
-  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
-  #       id: snyk-code
-  #       run: |
-  #         # Run Snyk code test and capture output
-  #         output=$(snyk code test --json)
-
-  #         # Check if there were any vulnerabilities found
-  #         if [ $? -eq 0 ]; then
-  #           echo "Snyk Code scan completed successfully with no issues found." >> $GITHUB_STEP_SUMMARY
-  #         else
-  #           echo "Snyk Code scan found the following issues:" >> $GITHUB_STEP_SUMMARY
-  #           echo "$output" | jq -r '.issues[] | "Issue: \(.issueType), Severity: \(.severity), Description: \(.description)"' >> $GITHUB_STEP_SUMMARY
-  #         fi
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
   Docker-Build:
     needs: [Python-Safety-Scan, Python-Bandit-Scan]
     runs-on: ubuntu-latest
@@ -345,80 +315,15 @@ jobs:
             exit 1  # Exit with a non-zero code to indicate failure
           fi
 
-      # - name: ZAP Scan
-      #   uses: zaproxy/action-full-scan@v0.12.0
-      #   with:
-      #     target: 'http://localhost:8080'  # Adjust this URL to match your application's endpoint
-      #     format: 'html'                    # Specify the output format (e.g., html, xml)
-      #     output: 'zap_report.html'         # Name of the output report file
+      - name: ZAP Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: "http://localhost:8080" # Adjust this URL to match your application's endpoint
+          format: "html" # Specify the output format (e.g., html, xml)
+          output: "zap_report.html" # Name of the output report file
 
-      # - name: Upload ZAP Report
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: zap-report
-      #     path: zap_report.html
-
-      # - name: curl test
-      #   run: |
-      #     curl_output=$(curl -s localhost:8080)
-      #     curl_exit_code=$?  # Capture the exit code of the curl command
-      #     echo "$curl_output" >> $GITHUB_STEP_SUMMARY
-
-      #     # Check if curl command was successful
-      #     if [ $curl_exit_code -ne 0 ]; then
-      #       echo "Curl command failed with exit code: $curl_exit_code" >> $GITHUB_STEP_SUMMARY
-      #       exit $curl_exit_code  # Exit with the curl error code
-      #     fi
-
-      #     # Check if the response matches "Hello, World!"
-      #     if [ "$curl_output" = "Hello, World!" ]; then
-      #       echo "Docker run successfully" >> $GITHUB_STEP_SUMMARY
-      #       echo "curl command successfully returned: $curl_output" >> $GITHUB_STEP_SUMMARY
-      #     else
-      #       echo "Docker run failed" >> $GITHUB_STEP_SUMMARY
-      #       echo "curl failed to return 'Hello, World!'" >> $GITHUB_STEP_SUMMARY
-      #       exit 1  # Exit with a non-zero code to indicate failure
-      #     fi
-
-  # Update-Pull-Request:
-  #   needs:
-  #     [
-  #       Security-Audit,
-  #       Code-Unit-Testing,
-  #       Docker-Build,
-  #       Snyk-Code-Scan,
-  #       Snyk-Container-Scan,
-  #     ]
-  #   runs-on: ubuntu-latest
-
-  #   defaults:
-  #     run:
-  #       working-directory: ${{ vars.APP_FOLDER }}
-
-  #   steps:
-  #     - name: Update Pull Request
-  #       if: always()
-  #       uses: actions/github-script@v7
-  #       env:
-  #         NPM_AUDIT_OUTCOME: ${{ needs.Security-Audit.outputs.npm_audit_outcome }}
-  #         NPM_TEST_OUTCOME: ${{ needs.Code-Unit-Testing.outputs.npm_test_outcome }}
-  #         BUILD_OUTCOME: ${{ needs.Docker-Build.outputs.docker_build_outcome }}
-  #         SNYK_CODE_OUTCOME: ${{ needs.Snyk-Code-Scan.outputs.snyk_code_outcome }}
-  #         SNYK_CONTAINER_OUTCOME: ${{ needs.Snyk-Container-Scan.outputs.snyk_container_outcome }}
-  #       with:
-  #         github-token: ${{ secrets.GITHUB_TOKEN }}
-  #         script: |
-  #           const output = `#### NPM Security Audit ⚙️\`${process.env.NPM_AUDIT_OUTCOME}\`
-  #           #### NPM Unit Test ⚙️\`${process.env.NPM_TEST_OUTCOME}\`
-  #           #### Snyk Code Test 🔍\`${process.env.SNYK_CODE_OUTCOME}\`
-  #           #### Docker Build 🏗️\`${process.env.BUILD_OUTCOME}\`
-  #           #### Synk Container Test 🔍\`${process.env.SNYK_CONTAINER_OUTCOME}\`
-
-  #           *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-  #           github.rest.issues.createComment({
-  #             issue_number: context.issue.number,
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             body: output
-  #           })
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: zap-report
+          path: zap_report.html
