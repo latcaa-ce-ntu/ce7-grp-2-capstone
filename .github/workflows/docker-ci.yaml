@@ -19,10 +19,11 @@ permissions:
   # pull-requests: write # This is required for updating pull-requests with comments
 
 jobs:
-  Check-js-Files:
+  Check-Files:
     runs-on: ubuntu-latest
     outputs:
-      has_js_files: ${{ steps.check.outputs.has_js_files }}
+      has_js_files: ${{ steps.checkjs.outputs.has_js_files }}
+      has_python_files: ${{ steps.checkpy.outputs.has_python_files }}
 
     defaults:
       run:
@@ -34,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check for .js files
-        id: check
+        id: checkjs
         run: |
           if ls *.js 1> /dev/null 2>&1; then
             echo "has_js_files=true" >> $GITHUB_OUTPUT
@@ -42,22 +43,8 @@ jobs:
             echo "has_js_files=false" >> $GITHUB_OUTPUT
           fi
 
-  Check-Python-Files:
-    runs-on: ubuntu-latest
-    outputs:
-      has_python_files: ${{ steps.check.outputs.has_python_files }}
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ vars.APP_FOLDER }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Check for .py files
-        id: check
+        id: checkpy
         run: |
           if ls *.py 1> /dev/null 2>&1; then
             echo "has_python_files=true" >> $GITHUB_OUTPUT
@@ -67,7 +54,7 @@ jobs:
 
   Code-Checks:
     runs-on: ubuntu-latest
-    needs: [Check-js-Files, Check-Python-Files]
+    needs: Check-Files
 
     defaults:
       run:
@@ -79,17 +66,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        if: needs.Check-js-Files.outputs.has_js_files == 'true'
+        if: needs.Check-Files.outputs.has_js_files == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "23"
 
       - name: Run installation of dependencies commands
-        if: needs.Check-js-Files.outputs.has_js_files == 'true'
+        if: needs.Check-Files.outputs.has_js_files == 'true'
         run: npm install
 
       - name: Run a security audit
-        if: needs.Check-js-Files.outputs.has_js_files == 'true'
+        if: needs.Check-Files.outputs.has_js_files == 'true'
         id: npm-audit
         run: |
           # Run npm audit and capture output
@@ -104,14 +91,14 @@ jobs:
           fi
 
       - name: Install Mocha, Chai and Supertest
-        if: needs.Check-js-Files.outputs.has_js_files == 'true'
+        if: needs.Check-Files.outputs.has_js_files == 'true'
         # Mocha: A test framework for running tests.
         # Chai: An assertion library for Node.js.
         # Supertest: A library for testing HTTP servers.
         run: npm install --save-dev mocha chai supertest
 
       - name: Run unit testing command
-        if: needs.Check-js-Files.outputs.has_js_files == 'true'
+        if: needs.Check-Files.outputs.has_js_files == 'true'
         id: npm-test
         run: |
           # Run npm test and capture output
@@ -126,7 +113,7 @@ jobs:
           fi
 
       - name: Run Safety CLI to check for vulnerabilities
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         id: safety
         uses: pyupio/safety-action@v1
         with:
@@ -134,7 +121,7 @@ jobs:
           args: --detailed-output # To always see detailed output from this action
 
       - name: Summary of Python Safety Scan
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         run: |
           if [ "${{ steps.safety.outcome }}" == "success" ]; then
             echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
@@ -147,28 +134,28 @@ jobs:
           fi
 
       - name: Set Up Python
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
       - name: Install Bandit
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         run: pip install bandit[sarif]
 
       - name: Run Bandit Scan
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         id: bandit
         run: bandit -r . --severity-level high --confidence-level high -f sarif -o bandit-report.sarif
 
       - name: Upload Bandit scan SARIF report
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true' && failure()
+        if: needs.Check-Files.outputs.has_python_files == 'true' && failure()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: bandit-report.sarif
 
       - name: Summary of Bandit Scan
-        if: needs.Check-Python-Files.outputs.has_python_files == 'true'
+        if: needs.Check-Files.outputs.has_python_files == 'true'
         run: |
           if [ "${{ steps.bandit.outcome }}" == "success" ]; then
             echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
@@ -179,7 +166,7 @@ jobs:
           fi
 
   Docker-Build:
-    needs: [Code-Checks]
+    needs: Code-Checks
     runs-on: ubuntu-latest
 
     defaults:
