@@ -1,0 +1,4 @@
+Flask==2.3.2        # Ensure this matches your Flask version
+flask-cors==3.0.10  # CORS handling for Flask
+requests==2.31.0    # HTTP requests library
+secrets             # Part of Python standard library; no need to add
