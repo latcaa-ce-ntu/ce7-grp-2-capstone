@@ -364,7 +364,7 @@ jobs:
         with:
           type: now
           target_branch: uat
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.AUTOMERGE_TOKEN }}
 
   Advance-Tag-and-Release:
     if: ${{ github.ref_name == 'prod' }}
