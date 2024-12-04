@@ -17,7 +17,7 @@ api_url = os.getenv('API_URL')
 # Function to retrieve a joke
 def load_jokes():
     
-    print("load_jokes activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("load_jokes activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     
     body = {
          "resource": "/jokes",
@@ -54,5 +54,5 @@ def home():
 # get jokes function
 @webapp_blueprint.route('/get-joke')
 def get_joke():
-    print("get_joke activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("get_joke activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     return load_jokes()

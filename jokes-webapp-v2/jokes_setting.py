@@ -21,7 +21,7 @@ def index():
 
 @setting_blueprint.route('/api/jokes', methods=['GET'])
 def api_jokes():
-    print("python launch activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("python launch activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     
     body = {
          "resource": "/jokes",
@@ -35,7 +35,7 @@ def api_jokes():
 
 @setting_blueprint.route('/api/jokes', methods=['POST'])
 def create_joke():
-    print("python create activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("python create activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
 
     unique_number = int(time.time() * 1000)
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -77,7 +77,7 @@ def create_joke():
     
 @setting_blueprint.route('/api/jokes/<int:joke_id>', methods=['PUT'])
 def update_joke(joke_id):
-    print("python update activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("python update activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     
     data = request.get_json()
     # print("Data : ", data)
@@ -114,7 +114,7 @@ def update_joke(joke_id):
 
 @setting_blueprint.route('/api/jokes/<int:joke_id>', methods=['DELETE'])
 def delete_joke(joke_id):
-    print("python delete activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # print("python delete activate", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
     
     inner_body = {
         "httpMethod": "DELETE",
