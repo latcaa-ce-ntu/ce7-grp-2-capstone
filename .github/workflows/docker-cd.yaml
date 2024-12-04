@@ -74,20 +74,7 @@ jobs:
       #       type=semver,pattern={{version}}
 
       - name: Build and push Docker image
-        if: ${{ github.ref_name == 'dev' }}
-        id: pushdev
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ vars.APP_FOLDER }}/
-          file: ./${{ vars.APP_FOLDER }}/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          # tags: ${{ steps.meta.outputs.tags }}
-          # labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push Docker image
-        if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
-        id: pushuatprod
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: ./${{ vars.APP_FOLDER }}/
@@ -159,7 +146,7 @@ jobs:
           fi
 
   Create-Deployment:
-    needs: Create-Secret
+    needs: [Create-Secret, Get-Tag]
     runs-on: ubuntu-latest
 
     defaults:
