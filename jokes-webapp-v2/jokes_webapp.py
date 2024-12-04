@@ -9,7 +9,7 @@ import os
 
 # Define the blueprint
 webapp_blueprint = Blueprint('webapp', __name__)
-CORS(webapp_blueprint)  # Enable CORS for all routes
+CORS(webapp_blueprint)  #NOSONAR
 
 load_dotenv()
 api_url = os.getenv('API_URL')

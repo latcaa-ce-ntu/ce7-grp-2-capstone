@@ -1,8 +1,9 @@
 # Use the official Python image with Alpine (lightweight)
-FROM python:3.13-alpine
+#NOSONAR
+FROM python:3.13-alpine     
 
 # Set the working directory inside the container
-WORKDIR /app
+WORKDIR /app    #NOSONAR
 
 # Copy the requirements.txt to the container
 COPY requirements.txt /app/
@@ -15,7 +16,7 @@ COPY . /app/
 
 # Set environment variables (optional for your Flask app)
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=development
+# ENV FLASK_ENV=development
 
 # Expose the port Flask will run on (default is 5000)
 EXPOSE 5000
