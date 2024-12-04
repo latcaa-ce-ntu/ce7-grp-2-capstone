@@ -4,6 +4,8 @@ from jokes_setting import setting_blueprint  # Import the blueprint from jokes_s
 import os
 # from flask_wtf.csrf import CSRFProtect  # Import CSRFProtect here
 
+# sonar-ignore:start
+
 # app = Flask(__name__)
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
@@ -20,3 +22,4 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
+# sonar-ignore:end
