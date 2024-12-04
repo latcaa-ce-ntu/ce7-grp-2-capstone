@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "files/**" # Replace 'files' if needed to switch apps and update APP_FOLDER variable in github repo variables
+      - "files/**" # Replace 'files' if needed to switch apps and update APP_FOLDER variable as well in github repo variables
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -275,7 +275,7 @@ jobs:
           output: "zap_report.html" # Name of the output report file
 
       - name: Upload ZAP Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: zap-report
           path: zap_report.html
