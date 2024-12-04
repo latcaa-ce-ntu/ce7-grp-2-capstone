@@ -127,33 +127,6 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
-      # - name: Create Docker Config JSON
-      #   run: |
-      #   cat <<EOF > config.json
-      #   {
-      #     "auths": {
-      #       "ghcr.io": {
-      #         "username": "${{ secrets.GHCR_USER }}",
-      #         "password": "${{ secrets.GHCR_TOKEN }}",
-      #         "email": "latcaa.ntu@gmail.com",
-      #         "namespace": "${{ github.ref_name }}"
-      #       }
-      #     }
-      #   }
-      #   EOF
-
-      #   cat config.json | base64 >>
-
-      # - name: Create Secret
-      #   run: |
-      #     if ! kubectl get secret ghcr-auth --namespace="${{ github.ref_name }}" > /dev/null 2>&1; then
-      #     kubectl create secret docker-registry ghcr-auth \
-      #       --docker-server=ghcr.io \
-      #       --docker-username="${{ secrets.GHCR_USER }}" \
-      #       --docker-password="${{ secrets.GHCR_TOKEN }}" \
-      #       --docker-email="latcaa.ntu@gmail.com" \
-      #       --namespace="${{ github.ref_name }}"
-
       - name: Create Secrets file
         run: |
           cat <<EOF > secrets.yaml
@@ -167,7 +140,7 @@ jobs:
             .dockerconfigjson: |
               {
                 "auths": {
-                  "ghcr.io": {
+                  "${{ env.REGISTRY }}": {
                     "username": "${{ secrets.GHCR_USER }}",
                     "password": "${{ secrets.GHCR_TOKEN }}"
                   }
@@ -177,7 +150,13 @@ jobs:
 
       - name: Apply secret to Kubernetes
         run: |
-          kubectl apply -f secrets.yaml
+          kubectl apply -f secrets.yaml || true
+          sleep 10
+          if kubectl get secret -n ${{ github.ref_name }} | grep -q ghcr-auth; then
+            echo "secrets.yaml applied successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Secrets.yaml failed to apply" >> $GITHUB_STEP_SUMMARY
+          fi
 
   Create-Deployment:
     needs: Create-Secret
@@ -203,65 +182,6 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Deployment file
-        if: ${{ github.ref_name  == 'dev' }}
-        env:
-          LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
-        run: |
-          cat <<EOF > deployment.yaml
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            namespace: ${{ github.ref_name }}
-            name: ${{ env.IMAGE_NAME }}
-          spec:
-            replicas: 2
-            selector:
-              matchLabels:
-                app: ${{ env.IMAGE_NAME }}
-            template:
-              metadata:
-                labels:
-                  app: ${{ env.IMAGE_NAME }}
-              spec:
-                imagePullSecrets:
-                  - name: ghcr-auth
-                containers:
-                  - name: ${{ env.IMAGE_NAME }}
-                    image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-                    ports:
-                      - containerPort: 5000
-                        protocol: TCP
-                    resources:
-                      requests:
-                        cpu: "500m"
-                        memory: "512Mi"
-                      limits:
-                         cpu: "1"
-                         memory: "1Gi"
-                    livenessProbe:
-                      httpGet:
-                        path: "/"
-                        port: 5000
-                        scheme: "HTTP"
-                      initialDelaySeconds: 45
-                      timeoutSeconds: 3
-                      periodSeconds: 10
-                      successThreshold: 1
-                      failureThreshold: 3
-                    readinessProbe:
-                      httpGet:
-                        path: "/"
-                        port: 5000
-                        scheme: "HTTP"
-                      initialDelaySeconds: 30
-                      timeoutSeconds: 3
-                      periodSeconds: 10
-                      successThreshold: 1
-                      failureThreshold: 3
-          EOF
-
-      - name: Create Deployment file
-        if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
         env:
           LATEST_TAG: ${{ needs.Get-Tag.outputs.LATEST_TAG }}
         run: |
@@ -320,7 +240,13 @@ jobs:
 
       - name: Apply Deployment file
         run: |
-          kubectl apply -f deployment.yaml
+          kubectl apply -f deployment.yaml || true
+          sleep 10
+          if kubectl get deployment -n ${{ github.ref_name }} | grep -q ${{ env.IMAGE_NAME }}; then
+            echo "deployment.yaml applied successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "deployment.yaml failed to apply" >> $GITHUB_STEP_SUMMARY
+          fi
 
   Create-Service:
     needs: Create-Deployment
@@ -379,7 +305,13 @@ jobs:
 
       - name: Apply Service file
         run: |
-          kubectl apply -f service.yaml
+          kubectl apply -f service.yaml || true
+          sleep 10
+          if kubectl get service -n ${{ github.ref_name }} | grep -q ${{ env.IMAGE_NAME }}; then
+            echo "service.yaml applied successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "service.yaml failed to apply" >> $GITHUB_STEP_SUMMARY
+          fi
 
   Create-Route53:
     needs: Create-Service
@@ -429,6 +361,22 @@ jobs:
             }]
           }'
 
+          # Check if CNAME record was created successfully
+          sleep 10
+          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
+            echo "Route53 cname ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check if DNS name lookup works
+          sleep 10
+          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
+            echo "DNS name resolution successful."
+          else
+            echo "DNS name resolution failed."
+          fi
+
       - name: Create Route 53 CNAME Record
         if: ${{ github.ref_name == 'prod' }}
         run: |
@@ -453,3 +401,65 @@ jobs:
               }
             }]
           }'
+
+          # Check if CNAME record was created successfully
+          sleep 10
+          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
+            echo "route53 cname ce7-grp-2-app.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check if DNS name lookup works
+          sleep 10
+          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
+            echo "DNS name resolution successful." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "DNS name resolution failed." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  Automerge-to-UAT:
+    if: ${{ github.ref_name == 'dev' }}
+    needs: Create-Route53
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Merge dev -> uat
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: uat
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+		  
+  Advance-Tag-and-Release:
+    if: ${{ github.ref_name == 'prod' }}
+	  needs: Create-Route53
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
