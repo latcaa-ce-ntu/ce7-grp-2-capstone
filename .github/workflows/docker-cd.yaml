@@ -65,14 +65,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Extract metadata (tags, labels) for Docker
-      #   id: meta
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      #     tags: |
-      #       type=semver,pattern={{version}}
-
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
@@ -81,15 +73,6 @@ jobs:
           file: ./${{ vars.APP_FOLDER }}/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ needs.Get-Tag.outputs.LATEST_TAG }}.${{ github.run_number }}
-          # tags: ${{ steps.meta.outputs.tags }}
-          # labels: ${{ steps.meta.outputs.labels }}
-
-      # - name: Generate artifact attestation
-      #   uses: actions/attest-build-provenance@v1
-      #   with:
-      #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-      #     subject-digest: ${{ steps.push.outputs.digest }}
-      #     push-to-registry: true
 
   Create-Secret:
     needs: Docker-Push
@@ -324,7 +307,6 @@ jobs:
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Route 53 CNAME Record
-        if: ${{ github.ref_name == 'dev' || github.ref_name == 'uat' }}
         run: |
           # Wait for the LoadBalancer to get an external IP
           sleep 30 # Adjust this duration as necessary
@@ -364,47 +346,6 @@ jobs:
             echo "DNS name resolution failed."
           fi
 
-      - name: Create Route 53 CNAME Record
-        if: ${{ github.ref_name == 'prod' }}
-        run: |
-          # Wait for the LoadBalancer to get an external IP
-          sleep 30 # Adjust this duration as necessary
-
-          # Get the external IP of the LoadBalancer
-          EXTERNAL_IP=$(kubectl get svc -n ${{ github.ref_name }} | grep ${{ env.IMAGE_NAME }} | awk '{print $4}')
-
-          # Get Hosted Zone ID
-          ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
-
-          # Create a CNAME record in Route 53
-          aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
-            "Changes": [{
-              "Action": "UPSERT",
-              "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app.sctp-sandbox.com",
-                "Type": "CNAME",
-                "TTL": 300,
-                "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
-              }
-            }]
-          }'
-
-          # Check if CNAME record was created successfully
-          sleep 10
-          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
-            echo "route53 cname ce7-grp-2-app.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Check if DNS name lookup works
-          sleep 10
-          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
-            echo "DNS name resolution successful." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "DNS name resolution failed." >> $GITHUB_STEP_SUMMARY
-          fi
-
   Automerge-to-UAT:
     if: ${{ github.ref_name == 'dev' }}
     needs: Create-Route53
@@ -424,10 +365,10 @@ jobs:
           type: now
           target_branch: uat
           github_token: ${{ secrets.GITHUB_TOKEN }}
-		  
+
   Advance-Tag-and-Release:
     if: ${{ github.ref_name == 'prod' }}
-	  needs: Create-Route53
+    needs: Create-Route53
     runs-on: ubuntu-latest
 
     defaults:
