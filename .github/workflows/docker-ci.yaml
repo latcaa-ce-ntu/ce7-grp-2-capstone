@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "files/**" # Replace 'files' if needed to switch apps and update APP_FOLDER variable as well in github repo variables
+      - "files/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
