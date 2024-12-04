@@ -97,6 +97,25 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append linting output to summary
           fi
 
+  Terrascan-IAC:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    name: terrascan-action
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Run Terrascan
+      id: terrascan
+      uses: tenable/terrascan-action@main
+      with:
+        iac_type: 'terraform'
+        iac_version: 'v14'
+        policy_type: 'aws'
+        only_warn: true
+
   # Snyk-IAC-Scan:
   #   runs-on: ubuntu-latest
 
