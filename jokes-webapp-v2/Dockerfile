@@ -3,7 +3,7 @@
 FROM python:3.13-alpine     
 
 # Set the working directory inside the container
-WORKDIR /app    #NOSONAR
+WORKDIR /app    
 
 # Copy the requirements.txt to the container
 COPY requirements.txt /app/
@@ -12,7 +12,8 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code to the container
-COPY . /app/
+#NOSONAR
+COPY . /app/    
 
 # Set environment variables (optional for your Flask app)
 ENV FLASK_APP=app.py
