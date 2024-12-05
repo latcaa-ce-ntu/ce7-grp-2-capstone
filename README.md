@@ -625,6 +625,38 @@ project-root/
 ├── webapi_gtw.tf                     # A file that defines the resources for the AWS API Gateway.  
 └── README.md                         # Documentation for the setup and usage
 ```
+## The Great Laugh - Joke Web Application
+Imagine a simple, fun, and engaging web application designed to deliver random jokes at the click of a button. Introducing The Great Laugh — a joke-sharing platform that’s not just about laughter but also showcases cutting-edge technology and serverless architecture.
+
+![joke app](https://github.com/user-attachments/assets/ba298cb1-34b5-4d1a-8dd0-4ed73ad04d32)
+
+![Jokemgmt](https://github.com/user-attachments/assets/6e4b84a4-4b2b-4ed9-8690-5ca1a29e89b8)
+
+### Key Features
+1. Random Joke Generator
+- Click a button to fetch a random joke from a dynamic pool of jokes.
+- Each joke is retrieved through serverless APIs backed by AWS tools.
+- Joke Management Interface
+
+2. A sleek and user-friendly interface allows users to:
+- Create new jokes.
+- Edit existing jokes.
+- Delete jokes they no longer find funny.
+
+### Technologies Used
+1. Frontend
+The frontend is built using:
+- Python: Handles dynamic components of the application.
+- JavaScript: Powers interactivity like button clicks and API calls.
+- HTML & CSS: Provide a responsive and fun user interface.
+- The entire frontend runs in a Docker container for easy portability and scaling.
+
+2. Backend (Serverless)
+The backend leverages AWS serverless tools for seamless management and scaling:
+- API Gateway: Exposes RESTful endpoints for joke-related operations (Create, Read, Update, Delete).
+- AWS Lambda: Executes backend logic such as fetching a random joke or updating the database.
+- Amazon DynamoDB: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+
 
 ## This is jokes web application folder
 
