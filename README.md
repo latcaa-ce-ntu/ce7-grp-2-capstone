@@ -82,13 +82,21 @@ GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:
 OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow. 
 Potential areas for improvement: Restrict Access to different resources created based on specific user roles (IAM) that authenticate using OIDC.
 
-https://www.parsectix.com/blog/github-oidc
+<details>
 
-https://blog.clouddrove.com/github-actions-openid-connect-the-key-to-aws-authentication-dd9f66a7d31e
+```
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: write # This is required for actions/checkout
+  packages: write
+  attestations: write
+```
+</details>
 
-## Container Registry selection
+## Containerization
+### Container Registry selection
 
-We have decided to use github container registry (ghcr) for this project instead of other options like AWS Elastic Container Registry (ecr) or Docker Hub.
+We have decided to use github container registry (ghcr) for this project instead of other options like AWS Elastic Container Registry (ECR) or Docker Hub.
 Following are some advantages of using ghcr:
 
 1. Cost Efficiency
@@ -108,24 +116,19 @@ Following are some advantages of using ghcr:
 
 In summary, GHCR provides significant advantages in cost, integration, ease of use, and flexibility, making it a strong choice for developers leveraging GitHub.
 
-https://blog.devops.dev/docker-hub-or-ghcr-or-ecr-lazy-mans-guide-4da1d943d26e
 
-https://cloudonaut.io/versus/container-registry/ecr-vs-github-container-registry/
-
-https://pirasanth.com/blog/how-to-build-and-push-docker-images-to-github-container-registry-with-github
-
-## Secrets Management
+### Secrets Management
 
 We are using Github Actions Secrets for all of our secrets in this repo.
 
-## Environment handling
+### Environment handling
 
 We are not using terraform workspaces for this project because we do not want to create a vpc and eks for each workspace (and increase costs).
 Instead we re-use the same vpc and eks cluster. Then use kubernetes namespaces (dev/uat/prod) to separate the environments respectively.
 Understandably, in a large enough organization, it will be prudent to separate the cloud infra into different environments.
 However, for our small capstone project, we have opted to save on costs of running multiple eks clusters.
 
-## Kuberneter Cluster details
+### Kuberneter Cluster details
 
 Nodegroups:
 
@@ -135,7 +138,8 @@ IAM:
     - Roles:
     - Policies:
 
-## Terraform CI
+## CI/CD Pipelines
+### Terraform CI
 
 Terraform files are stored in ```terraform/``` directory in the repo.
 We implement the following checks for our Terraform CI workflow:
@@ -149,35 +153,35 @@ We implement the following checks for our Terraform CI workflow:
 7. Checkov Scan
 8. Terraform plan
 
-## Terraform CD
+### Terraform CD
 
 Our terraform CD workflow only consists of one step since all the checks have been done in the CI workflow.
 
 1. Terraform Apply
 
-## Docker CI
+### Docker CI
 
 Docker files are stored in the ```files/``` directory in the repo.
 We implement the following checks for our Docker CI workflow:
 
-### Python Safety Scan
+#### Python Safety Scan
   - Scans for vulnerabilities in third-party libraries and dependencies specified in requirements files.
-### Python Bandit Scan
+#### Python Bandit Scan
   - Only scans the application code itself, detecting issues directly within the codebase.
-### Sonarqube scan
+#### Sonarqube scan
   - Analyzes source code to detect bugs, vulnerabilities, and code smells, providing insights into code quality and enabling teams to maintain clean and secure codebases.
-### Docker Build
+#### Docker Build
   - Builds the Docker container locally on the runner to confirm that it can be built without errors.
-### Grype Container Scan
+#### Grype Container Scan
   - An open-source vulnerability scanner that identifies known security vulnerabilities in container images and filesystems.
-### Docker run test
+#### Docker run test
   - Runs the Docker container to make sure it can launch successfully.
 
-## Docker CD
+### Docker CD
 
 Since we are using a kubernetes cluster, we will need to apply kubernetes secrets, deployments and services as part of the workflow.
 
-### Get Github Tag
+#### Get Github Tag
 
 - Fetch the latest tag from the github repo to be used as tags for container images.
 <details>
@@ -208,7 +212,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Docker Push
+#### Docker Push
 - Use a github action ```docker/build-push-action@v6``` to build and push the container image to ghcr
 <details>
   
@@ -244,7 +248,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Create and apply secrets.yaml
+#### Create and apply secrets.yaml
 - Use a Github Personal Access Token(PAT) stored in Github Secrets to create a secrets.yaml file and apply it to the kubernetes cluster.
 - We can create a secret in each namespace with the same name ```ghcr-auth```. This makes is easy to pull the secret later for deployments to any namespace.
 <details>
@@ -307,7 +311,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Create and apply deployment.yaml
+#### Create and apply deployment.yaml
 - Create a deployment.yaml based on a template in github actions with substitutions for eks cluster name, region, namespace, image name, etc.
 - Apply the file to the kubernetes cluster.
 <details>
@@ -383,7 +387,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Create and apply service.yaml
+#### Create and apply service.yaml
 - Create a service.yaml file based on a template in github actions with substitutions for cluster, namespace, region and security group.
 - Apply the file to the kubernetes cluster.
 <details>
@@ -457,7 +461,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Create Route53 cname
+#### Create Route53 cname
 - Once the service is created and we get an External IP from the load balancer, we can create a Route53 CNAME on our hosted zone ```sctp-sandbox.com```.
 - We use awscli to get the Zone ID and to create the CNAME record.
 - We then check if the CNAME resource record was created successfully and if the dns resolution functions.
@@ -543,7 +547,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Automerge to UAT branch (if push to dev)
+#### Automerge to UAT branch (if push to dev)
 - After we have succesfully done all the above on the dev branch we can auto-merge dev to uat branch.
 <details>
   
@@ -571,7 +575,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 
 </details>
 
-### Advance github tag and release (if push to prod)
+#### Advance github tag and release (if push to prod)
 - When we have successfully pushed a PR from uat to prod, we will advance the github tag and release.
 <details>
   
@@ -678,7 +682,7 @@ The backend leverages **AWS serverless tools** for seamless management and scali
 - **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
 - **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
 
-## Jokes web application files/folder
+### Jokes web application files/folder
 
 ```sh
 Jokes-webapp-v2
@@ -728,3 +732,12 @@ A REST API is an architectural style that allows applications to interact over H
 AWS IAM secures access to resources in your AWS environment. It lets you create users, roles, and policies to control who can access what. For serverless architectures, IAM ensures that services like API Gateway and Lambda interact securely with DynamoDB or other resources, following the principle of least privilege.
 
 ![IamPolicy](https://github.com/user-attachments/assets/a65c7531-68dd-47fe-915e-1b19a722ddad)
+
+
+## References
+
+- https://www.parsectix.com/blog/github-oidc
+- https://blog.clouddrove.com/github-actions-openid-connect-the-key-to-aws-authentication-dd9f66a7d31e
+- https://blog.devops.dev/docker-hub-or-ghcr-or-ecr-lazy-mans-guide-4da1d943d26e
+- https://cloudonaut.io/versus/container-registry/ecr-vs-github-container-registry/
+- https://pirasanth.com/blog/how-to-build-and-push-docker-images-to-github-container-registry-with-github
