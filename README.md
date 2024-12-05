@@ -672,12 +672,12 @@ project-root/
 ```sh
 Jokes-webapp-v2
 ├── static            # This directory contains static assets that are served directly to the client.		
-│ 	├── joke.png      # The image associated with the jokes (can be displayed in the frontend).
-│	  ├── styles.css    # The CSS file to style the webpage.
+│   ├── joke.png      # The image associated with the jokes (can be displayed in the frontend).
+│   ├── styles.css    # The CSS file to style the webpage.
 │
 ├── templates         # This directory holds the HTML templates used by the Flask application.
-│	  ├── index.html    # The main page of the application, which displays jokes.
-│	  ├── mgmt.html     # A management page, possibly for admin use to control the jokes.
+│   ├── index.html    # The main page of the application, which displays jokes.
+│   ├── mgmt.html     # A management page, possibly for admin use to control the jokes.
 │
 ├── .dockerignore     # Defines which files and directories should be excluded when building the Docker image.	
 ├── .env              # A file containing environment variables used by the application.
