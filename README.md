@@ -628,9 +628,13 @@ project-root/
 ## The Great Laugh - Joke Web Application
 Imagine a simple, fun, and engaging web application designed to deliver random jokes at the click of a button. Introducing The Great Laugh — a joke-sharing platform that’s not just about laughter but also showcases cutting-edge technology and serverless architecture.
 
-![joke app](https://github.com/user-attachments/assets/ba298cb1-34b5-4d1a-8dd0-4ed73ad04d32)
+### Main page
 
-![Jokemgmt](https://github.com/user-attachments/assets/6e4b84a4-4b2b-4ed9-8690-5ca1a29e89b8)
+![webappscreen](https://github.com/user-attachments/assets/1b0646b0-143e-441d-abb4-5ea9e6f8404d)
+
+### Joke Management Page
+
+![mgmtpage](https://github.com/user-attachments/assets/c0d5ce22-fb80-4512-95fb-d6539bee8b0e)
 
 ### Key Features
 1. Random Joke Generator
