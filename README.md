@@ -658,7 +658,7 @@ The backend leverages AWS serverless tools for seamless management and scaling:
 - Amazon DynamoDB: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
 
 
-## This is jokes web application folder
+## Jokes web application files/folder
 
 ```sh
 Jokes-webapp-v2
