@@ -59,6 +59,7 @@ Moving from uat branch to prod branch will be a manual pull request.
 
 ## OpenID Connect (OIDC)  
 
+GitHub OpenID Connect (OIDC) allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
 ![image](https://github.com/user-attachments/assets/aa51e9c6-ca29-4458-8510-e9a1595fa9df)
 
 GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:  
@@ -75,6 +76,11 @@ GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:
     - OIDC supports multiple cloud providers, allowing teams to deploy applications without changing authentication methods.  
 6. Better Compliance with Security Standards  
     - Adopting OIDC helps organizations align with security best practices, minimizing the use of long-lived credentials.  
+
+### Conclusion  
+
+OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow. 
+Potential areas for improvement: Restrict Access to different resources created based on specific user roles (IAM) that authenticate using OIDC.
 
 https://www.parsectix.com/blog/github-oidc
 
