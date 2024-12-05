@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "files/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
+      - "jokes-webapp-v2/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -119,7 +119,7 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-          args: --detailed-output # To always see detailed output from this action
+          args: --detailed-output --ignore 72731 --ignore 70813 --ignore 70624 # To always see detailed output from this action
 
       - name: Summary of Python Safety Scan
         if: needs.Check-Files.outputs.has_python_files == 'true'

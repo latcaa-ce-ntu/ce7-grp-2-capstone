@@ -9,7 +9,7 @@ on:
     tags:
       - "v*"
     paths:
-      - "files/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
+      - "jokes-webapp-v2/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   REGISTRY: ${{ vars.REGISTRY }}
