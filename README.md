@@ -215,18 +215,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
-        if: ${{ github.ref_name == 'dev' }}
-        id: pushdev
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ vars.APP_FOLDER }}/
-          file: ./${{ vars.APP_FOLDER }}/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Build and push Docker image
-        if: ${{ github.ref_name == 'uat' || github.ref_name == 'prod' }}
-        id: pushuatprod
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: ./${{ vars.APP_FOLDER }}/
@@ -454,7 +443,6 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 - Once the service is created and we get an External IP from the load balancer, we can create a Route53 CNAME on our hosted zone ```sctp-sandbox.com```.
 - We use awscli to get the Zone ID and to create the CNAME record.
 - We then check if the CNAME resource record was created successfully and if the dns resolution functions.
-- We have different cnames for dev/uat (cname ends in -dev/-uat) and prod (cname has no suffix).
 <details>
   
 ```yml
@@ -482,7 +470,6 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
 
       - name: Create Route 53 CNAME Record
-        if: ${{ github.ref_name == 'dev' || github.ref_name == 'uat' }}
         run: |
           # Wait for the LoadBalancer to get an external IP
           sleep 30 # Adjust this duration as necessary
@@ -493,12 +480,15 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
           # Get Hosted Zone ID
           ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
 
+          # Create CNAME variable
+          CNAME=ce7-grp-2-app-${{ github.ref_name }}.sctp-sandbox.com
+
           # Create a CNAME record in Route 53
           aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
             "Changes": [{
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com",
+                "Name": "'"$CNAME"'",
                 "Type": "CNAME",
                 "TTL": 300,
                 "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
@@ -506,58 +496,27 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
             }]
           }'
 
+          # Wait for CNAME record to be created
+          sleep 30 # Adjust this duration as necessary
+
+          # Get CNAME Value
+          CNAME_VALUE=$(aws route53 list-resource-record-sets --hosted-zone-id "$ZONE_ID" --query "ResourceRecordSets[?Type == 'CNAME' && Name == '$CNAME.'].ResourceRecords[*].Value" --output text)
+
           # Check if CNAME record was created successfully
-          sleep 10
-          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
-            echo "Route53 cname ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
+          if [ "$CNAME_VALUE" = "$EXTERNAL_IP" ]; then
+            echo "Route53 cname $CNAME created successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "Route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
           fi
 
-          # Check if DNS name lookup works
-          sleep 10
-          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
-            echo "DNS name resolution successful."
-          else
-            echo "DNS name resolution failed."
-          fi
-
-      - name: Create Route 53 CNAME Record
-        if: ${{ github.ref_name == 'prod' }}
-        run: |
-          # Wait for the LoadBalancer to get an external IP
+          # Wait for DNS propagation
           sleep 30 # Adjust this duration as necessary
 
-          # Get the external IP of the LoadBalancer
-          EXTERNAL_IP=$(kubectl get svc -n ${{ github.ref_name }} | grep ${{ env.IMAGE_NAME }} | awk '{print $4}')
-
-          # Get Hosted Zone ID
-          ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
-
-          # Create a CNAME record in Route 53
-          aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
-            "Changes": [{
-              "Action": "UPSERT",
-              "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app.sctp-sandbox.com",
-                "Type": "CNAME",
-                "TTL": 300,
-                "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
-              }
-            }]
-          }'
-
-          # Check if CNAME record was created successfully
-          sleep 10
-          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
-            echo "route53 cname ce7-grp-2-app.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
-          fi
+          # Get dig result
+          DIG_RESULT=$(dig @8.8.8.8 +short $CNAME | grep amazonaws)
 
           # Check if DNS name lookup works
-          sleep 10
-          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
+          if [ "$DIG_RESULT" = "$EXTERNAL_IP" ]; then
             echo "DNS name resolution successful." >> $GITHUB_STEP_SUMMARY
           else
             echo "DNS name resolution failed." >> $GITHUB_STEP_SUMMARY
@@ -601,7 +560,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 ```yml
   Advance-Tag-and-Release:
     if: ${{ github.ref_name == 'prod' }}
-	  needs: Create-Route53
+    needs: Create-Route53
     runs-on: ubuntu-latest
 
     defaults:

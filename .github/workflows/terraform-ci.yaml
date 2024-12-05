@@ -97,6 +97,44 @@ jobs:
             echo "$output" >> $GITHUB_STEP_SUMMARY  # Append linting output to summary
           fi
 
+
+  Terrascan-IAC:
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout Code
+       uses: actions/checkout@v4
+  
+     - name: Run Terrascan for Terraform
+       id: terrascan
+       uses: tenable/terrascan-action@main
+       with:
+         iac_type: 'terraform'
+         iac_version: 'v14'
+         policy_type: 'aws'
+         only_warn: true
+         sarif_upload: true
+
+     - name: Run Terrascan for Kubernetes
+       uses: tenable/terrascan-action@main
+       with:
+         iac_type: 'k8s'
+         policy_type: 'aws'
+         only_warn: true
+         sarif_upload: true  
+
+     - name: Run Terrascan for Docker
+       uses: tenable/terrascan-action@main
+       with:
+         iac_type: 'docker'
+         policy_type: 'aws'
+         only_warn: true
+         sarif_upload: true  
+      
+     - name: Upload SARIF file
+       uses: github/codeql-action/upload-sarif@v3
+       with:
+         sarif_file: terrascan.sarif
+
   # Snyk-IAC-Scan:
   #   runs-on: ubuntu-latest
 
