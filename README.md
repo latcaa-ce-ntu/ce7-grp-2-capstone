@@ -2,6 +2,13 @@
 
 # CE7 Group 2 Capstone Project  
 
+## Project Objectives
+1. Create A simple Web App that allows users to read new jokes with each click of a button. 
+2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB.
+3. Build AWS infrastructure using Terraform
+4. Implement CI/CD pipeline using Github Actions to build infrastructure, perform relevant tests on Terraform code/k8s files/Web App python code/Dockerfiles and automate deployment from testing to live environment.
+5. Use AWS EKS as the container orchestration platform
+
 ## Dev/UAT/Prod Github Branch strategy  
 
 ![git branch2](https://github.com/user-attachments/assets/a1adccf3-c3bc-4e1e-8ed6-d7c7e93d6d1c)
