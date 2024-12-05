@@ -677,7 +677,7 @@ Jokes-webapp-v2
 └── requirements.txt  # A file listing the Python dependencies required for the application.
 ```
 
-## Introduction to Key AWS Serverless Tools
+## About AWS Serverless Tools
 AWS provides powerful services that enable developers to build scalable, cost-efficient, and serverless applications. Among these, API Gateway, AWS Lambda, Amazon DynamoDB, REST APIs, and IAM stand out as essential tools for modern cloud development.
 
 ![APIG_tut_resources](https://github.com/user-attachments/assets/11e617c1-dbb4-4071-982e-ad49c57f02ea)
