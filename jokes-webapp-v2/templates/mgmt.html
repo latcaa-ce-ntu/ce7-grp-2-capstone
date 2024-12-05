@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joke Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>Joke Management</h1>
+        <div class="button-setting-container">
+            <button onclick="window.location.href='/'" id="button-setting">Back to Main</button>
+        </div>
+
+        <div class="container mt-5">
+
+            <!-- Create Button -->
+            <div class="button-setting-left-container">
+                <button id="create-btn">Create New Joke</button>
+            </div>
+            <div>&nbsp;</div>
+
+            <!-- Display Create Joke Form -->
+            <div id="create-joke-container" style="display: none;">
+
+                <!-- <h3>Add a New Joke</h3> -->
+                <form id="create-joke-form" class="mb-3 " method="POST" action="/settings/api/jokes">
+                    <div class="mb-3 text-start">
+                        <label for="new-joke" class="form-label">Enter your new Joke here : </label>
+                        <textarea id="new-joke" name="new-joke" class="form-control" rows="8" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary ">Add Joke</button>
+                    <button type="button" class="btn btn-primary " id="cancel-create-btn">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Display Edit Joke Form -->
+            <div class="mb-4" id="edit-joke-container" style="display: none;">
+                <form id="update-joke-form" class="mb-3">
+                    <div class="mb-3 text-start">
+                        <label for="joke-text" class="form-label">Joke ID :</label>
+                        <input type="text" id="joke-id" style="text-align: center;" readonly>
+                        <input style="display: none;" type="text" id="joke-datecreation">
+                        <input style="display: none;" type="text" id="joke-totallikes">
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="joke-text" class="form-label text-start">Joke Content :</label>
+                        <textarea id="joke-text" name="joke-text" class="form-control" rows="8" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="form-submit">Update Joke</button>
+                    <button type="button" class="btn btn-primary" id="cancel-edit-btn">Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Jokes Table -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>JoKe ID</th>
+                    <th>Joke Content</th>
+                    <th style="display: none;">Date Created</th>
+                    <th style="display: none;">Total Likes</th>
+                    <th width="150">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="joke-list">
+                <!-- Dynamic Content Goes Here -->
+            </tbody>
+        </table>
+
+        <!-- Loading spinner -->
+        <div style="display: grid; place-items: center; ">
+            <div id="loading">
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        // Show the Create Joke Form when the Create button is clicked
+        document.getElementById('create-btn').addEventListener('click', () => {
+            document.getElementById('create-joke-container').style.display = 'block';
+            document.getElementById('edit-joke-container').style.display = 'none';
+        });
+
+        // Hide the Create form when "Cancel" is clicked
+        document.getElementById('cancel-create-btn').addEventListener('click', () => {
+            document.getElementById('create-joke-container').style.display = 'none';
+        });
+
+        // Scroll to the create form
+        document.getElementById('create-joke-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+
+        // Hide the Edit form when "Cancel" is clicked
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            document.getElementById('edit-joke-container').style.display = 'none';
+        });
+
+        function escapeString(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+        // Function to load jokes
+        async function loadJokes(strMsg) {
+            try {
+                console.log("LoadJokes activate.", strMsg + ' - ' + new Date().toString());
+                document.getElementById('loading').style.display = 'block'; // Show the loading spinner
+                document.getElementById('create-joke-container').style.display = 'none';
+                document.getElementById('edit-joke-container').style.display = 'none';
+                // const response = await fetch('/api/jokes');
+                const response = await fetch('/settings/api/jokes');
+                const data = await response.json();
+
+                const jokesList = document.getElementById('joke-list');
+                jokesList.innerHTML = '';
+
+                data.sort((a, b) => b.Id - a.Id);
+
+                data.forEach(joke => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${joke.Id}</td>
+                        <td>${joke.Jokes}</td>
+                        <td style="display: none;">${joke.DateCreation}</td>
+                        <td style="display: none;">${joke.TotalLikes}</td>
+                        <td>
+                            <button class="btn btn-success create-btn" id="edit-btn" onclick="editJokeForm(${joke.Id}, '${escapeString(joke.Jokes)}', '${joke.DateCreation}', '${joke.TotalLikes}')">Edit</button>
+                            <button class="btn btn-success create-btn" onclick="deleteJoke(${joke.Id})">Delete</button>
+                        </td>
+                    `;
+                    jokesList.appendChild(row);
+                });
+                document.getElementById('loading').style.display = 'none'; // Show the loading spinner
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none'; // Show the loading spinner
+                console.error('Error loading jokes:', error);
+            }
+        }
+
+        // Function to add a new joke
+        async function addJoke(event) {
+            event.preventDefault();
+            const newJoke = document.getElementById('new-joke').value;
+
+            try {
+                // const response = await fetch('/api/jokes', {
+                const response = await fetch('/settings/api/jokes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ Jokes: newJoke }),
+                });
+
+                if (response.ok) {
+                    document.getElementById('new-joke').value = '';
+                    loadJokes("Add Joke - Reload");
+                }
+            } catch (error) {
+                console.error('Error adding joke:', error);
+            }
+        }
+
+        // Function to prompt editing a joke
+        async function editJokeForm(id, jokeText, datecreation, totallikes) {
+
+            // event.preventDefault(); // Prevents form submission
+            document.getElementById('edit-joke-container').style.display = 'block';
+            document.getElementById('create-joke-container').style.display = 'none';
+            // console.log("jokeText edit : ", jokeText)
+            // console.log("datecreation  : ", datecreation)
+            // console.log("totallikes : ", totallikes)
+            //document.getElementById('form-title').textContent = 'Edit a Joke';
+            //document.getElementById('form-submit').textContent = 'Update Joke';
+            document.getElementById('joke-id').value = id;
+            document.getElementById('joke-text').value = jokeText;
+            document.getElementById('joke-datecreation').value = datecreation;
+            document.getElementById('joke-totallikes').value = totallikes;
+        }
+
+        // Function to update editing a joke
+        async function updateJoke(event) {
+            event.preventDefault();
+
+            const jokeId = document.getElementById('joke-id').value;
+            const jokeText = document.getElementById('joke-text').value;
+            const datecreation = document.getElementById('joke-datecreation').value;
+            const totallikes = document.getElementById('joke-totallikes').value;
+            // console.log("jokeText submit : ", jokeId + ' - ' + jokeText)
+
+            // Ensure the PUT request is made with the correct URL and method
+            try {
+                // const response = await fetch(`/api/jokes/${jokeId}`, {
+                const response = await fetch(`/settings/api/jokes/${jokeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        Jokes: jokeText,
+                        DateCreation: datecreation,
+                        TotalLikes: totallikes,
+                    }),
+                });
+
+                // console.log("Update response : ", response)
+
+                document.getElementById('edit-joke-container').style.display = 'none';
+
+                if (response.ok) {
+                    document.getElementById('update-joke-form').reset();
+                    loadJokes("Update Joke - Reload");
+                    alert("Joke updated successfully!");
+                } else {
+                    alert("Failed to update the joke.");
+                }
+
+            } catch (error) {
+                console.error("Error updating joke:", error);
+                alert("Error updating joke.");
+            }
+        }
+
+        // Function to delete a joke
+        async function deleteJoke(id) {
+            if (confirm("Are you sure you want to delete this joke?")) {
+                try {
+                    // const response = await fetch(`/api/jokes/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`/settings/api/jokes/${id}`, { method: 'DELETE' });
+
+                    if (response.ok) {
+                        loadJokes("Delete Joke - Reload");
+                    }
+                } catch (error) {
+                    console.error('Error deleting joke:', error);
+                }
+            }
+        }
+
+        // Event listener for form submission
+        document.getElementById('create-joke-form').addEventListener('submit', addJoke);
+        document.getElementById('update-joke-form').addEventListener('submit', updateJoke);
+
+        // Load jokes when the page loads
+        window.onload = loadJokes("Page Load");
+    </script>
+</body>
+
+</html>

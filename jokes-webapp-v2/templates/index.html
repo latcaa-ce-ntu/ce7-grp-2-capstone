@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CE7 GROUP 2 Capstone Project</title>
+  <!-- Call styles.css -->
+  <!-- <link rel="stylesheet" href="styles.css"> -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+  <div class="page-container">
+    <div class="content">
+      <div class="button-setting-container">
+        <button onclick="window.location.href='/settings'" onclick="" id="button-setting">Setting</button>
+      </div>
+
+      <!-- Call images -->
+      <div class="header-container">
+        <!-- <img src="joke.png" class="images"> -->
+        <img src="{{ url_for('static', filename='joke.png') }}" class="images">
+        <h1> The Great Laugh!</h1>
+      </div>
+
+      <div>
+        <div class="joke-box" id="joke-container">
+          <p id="joke">Alert: This button unleashes a joke <br>brace yourself for laughter!</p>
+        </div>
+
+        <!-- Call javascript function -->
+        <div>
+          <button onclick="fetchJoke()" id="button-id">Show Me The Joke Now</button>
+        </div>
+
+
+      </div>
+      <div class="spiner-container">
+        <div>&nbsp;</div>
+        <div id="loading"></div> <!-- Loading spinner -->
+      </div>
+    </div>
+
+    <footer class="footer-section">
+      <div>Capstone Project: Jokes Web Application | Group : CE7 Group 2 | Team Members: Azmin, Alan, TeckChoy, Lovell,
+        Andy</div>
+    </footer>
+  </div>
+
+  <!-- javascript function -->
+  <script>
+    // Call jokes_app.py function
+    async function fetchJoke() {
+      try {
+
+        document.getElementById('loading').style.display = 'block'; // Show the loading spinner
+
+        changeButtonName()      // Call changeButtonName function
+        changeBackgroundColor() // Call changeBackgroundColor function
+        const emojis = ['😀', '😄', '😁', '😃', '😆', '😊'];
+        const randomIndex = window.crypto.getRandomValues(new Uint32Array(1))[0] % emojis.length;
+        const randomEmoji = emojis[randomIndex];
+
+        const response = await fetch('/webapp/get-joke');
+        console.log("Joke Return: ", response)
+        const data = await response.json();
+        document.getElementById('joke').innerHTML = data.joke + randomEmoji;
+        document.getElementById('loading').style.display = 'none';// Hide the loading spinner
+
+      } catch (error) {
+        console.error("Error fetching joke:", error);
+        document.getElementById('loading').style.display = 'none';// Hide the loading spinner
+      }
+    }
+
+    // Function to change background
+    function changeBackgroundColor() {
+      const jokeContainer = document.getElementById('joke-container');
+
+      // Generate a cryptographically secure random hue value between 0 and 360
+      const randomHue = window.crypto.getRandomValues(new Uint32Array(1))[0] % 360;
+
+      // Create an HSL color string using the random hue
+      const randomColor = `hsl(${randomHue}, 100%, 85%)`;
+
+      jokeContainer.style.backgroundColor = randomColor;
+    }
+
+    // Function to change button name
+    function changeButtonName() {
+      const button = document.getElementById('button-id');
+      button.innerText = "Show New Joke";
+    }
+  </script>
+</body>
+
+</html>
