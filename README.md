@@ -9,6 +9,11 @@
 4. Implement CI/CD pipeline using Github Actions to build infrastructure, perform relevant tests on Terraform code/k8s files/Web App python code/Dockerfiles and automate deployment from testing to live environment.
 5. Use AWS EKS as the container orchestration platform
 
+## Architechture Diagram [To be updated]
+![image](https://github.com/user-attachments/assets/a4350549-5f85-416c-aec6-f124fd283843)
+
+
+
 ## Dev/UAT/Prod Github Branch strategy  
 
 ![git branch2](https://github.com/user-attachments/assets/a1adccf3-c3bc-4e1e-8ed6-d7c7e93d6d1c)
