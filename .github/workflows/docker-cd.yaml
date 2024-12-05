@@ -317,12 +317,15 @@ jobs:
           # Get Hosted Zone ID
           ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name sctp-sandbox.com --query "HostedZones[].Id" --output text  | sed 's|/hostedzone/||')
 
+          # Create CNAME variable
+          CNAME=ce7-grp-2-app-${{ github.ref_name }}.sctp-sandbox.com
+
           # Create a CNAME record in Route 53
           aws route53 change-resource-record-sets --hosted-zone-id $ZONE_ID --change-batch '{
             "Changes": [{
               "Action": "UPSERT",
               "ResourceRecordSet": {
-                "Name": "ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com",
+                "Name": "'"$CNAME"'",
                 "Type": "CNAME",
                 "TTL": 300,
                 "ResourceRecords": [{"Value": "'"$EXTERNAL_IP"'"}]
@@ -330,20 +333,30 @@ jobs:
             }]
           }'
 
+          # Wait for CNAME record to be created
+          sleep 30 # Adjust this duration as necessary
+
+          # Get CNAME Value
+          CNAME_VALUE=$(aws route53 list-resource-record-sets --hosted-zone-id "$ZONE_ID" --query "ResourceRecordSets[?Type == 'CNAME' && Name == '$CNAME.'].ResourceRecords[*].Value" --output text)
+
           # Check if CNAME record was created successfully
-          sleep 10
-          if [ "$(aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID --query "ResourceRecordSets[?Type == 'CNAME' && Name == 'ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com.'].ResourceRecords[*].Value" --output text)" = "$EXTERNAL_IP" ]; then
-            echo "Route53 cname ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com created successfully." >> $GITHUB_STEP_SUMMARY
+          if [ "$CNAME_VALUE" = "$EXTERNAL_IP" ]; then
+            echo "Route53 cname $CNAME created successfully." >> $GITHUB_STEP_SUMMARY
           else
             echo "Route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
           fi
 
+          # Wait for DNS propagation
+          sleep 30 # Adjust this duration as necessary
+
+          # Get dig result
+          DIG_RESULT=$(dig @8.8.8.8 +short $CNAME | grep amazonaws)
+
           # Check if DNS name lookup works
-          sleep 10
-          if [ "$(dig @8.8.8.8 +short ce7-grp-2-app-'${{ github.ref_name }}'.sctp-sandbox.com | grep amazonaws)" = "$EXTERNAL_IP" ]; then
-            echo "DNS name resolution successful."
+          if [ "$DIG_RESULT" = "$EXTERNAL_IP" ]; then
+            echo "DNS name resolution successful." >> $GITHUB_STEP_SUMMARY
           else
-            echo "DNS name resolution failed."
+            echo "DNS name resolution failed." >> $GITHUB_STEP_SUMMARY
           fi
 
   Automerge-to-UAT:
