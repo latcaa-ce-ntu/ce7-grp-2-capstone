@@ -644,19 +644,17 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 - Delete jokes they no longer find funny.
 
 ### Technologies Used
-1. Frontend
-The frontend is built using:
-- Python: Handles dynamic components of the application.
-- JavaScript: Powers interactivity like button clicks and API calls.
-- HTML & CSS: Provide a responsive and fun user interface.
-- The entire frontend runs in a Docker container for easy portability and scaling.
+1. Frontend is built using:
+- **Python**: Handles dynamic components of the application.
+- **JavaScript**: Powers interactivity like button clicks and API calls.
+- **HTML & CSS**: Provide a responsive and fun user interface.
+- The entire frontend runs in a **Docker container** for easy portability and scaling.
 
 2. Backend (Serverless)
-The backend leverages AWS serverless tools for seamless management and scaling:
-- API Gateway: Exposes RESTful endpoints for joke-related operations (Create, Read, Update, Delete).
-- AWS Lambda: Executes backend logic such as fetching a random joke or updating the database.
-- Amazon DynamoDB: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
-
+The backend leverages **AWS serverless tools** for seamless management and scaling:
+- **API Gateway**: Exposes RESTful endpoints for joke-related operations (Create, Read, Update, Delete).
+- **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
+- **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
 
 ## Jokes web application files/folder
 
