@@ -2,6 +2,7 @@
 resource "aws_security_group" "eks_cluster_sg" {
   name_prefix = "${var.name_prefix}-eks-cluster-sg"
   vpc_id      = var.vpc_id
+  description = "Security group for the EKS cluster, allowing all inbound traffic from any source within the security group to facilitate communication between cluster components. It also permits all outbound traffic, ensuring that the cluster can access external resources as needed."
 
   # Allow all traffic within the security group
   ingress {
@@ -28,6 +29,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 resource "aws_security_group" "lb_sg" {
   name_prefix = "${var.name_prefix}-lb-sg"
   vpc_id      = var.vpc_id
+  description = "Security group for the Load Balancer, allowing inbound HTTP traffic on port 80 from any source and permitting all outbound traffic."
 
   ingress {
     from_port   = 80
