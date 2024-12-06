@@ -44,3 +44,41 @@ provider "kubernetes" {
   #   command     = "aws"
   # }
 }
+
+# Overview- This configuration sets up AWS and Kubernetes providers with specific version constraints and tag management.
+
+## Core Components
+
+### Terraform Settings
+# - Requires Terraform version ~> 1.10
+# - Uses AWS provider version ~> 5.0
+
+### Provider Configurations
+# 1. AWS Provider:
+#   - Region from variables
+#   - Dynamic tagging based on workspace
+#   - Standard team/project tags
+
+# 2. Kubernetes Provider:
+#   - EKS cluster integration
+#   - Authentication via cluster token
+#   - Certificate-based security
+
+## Technical Details
+
+### Default Tags
+# - Environment: Dynamic (workspace-based)
+# - Owner: ce7-grp-2
+# - Cohort: CE7
+# - TerraformWorkspace: Dynamic
+# - Terraform: true
+
+### EKS Integration
+# - Retrieves cluster data using name_prefix
+# - Configures authentication
+# - Sets up secure cluster communication
+
+### Additional Notes
+# - Includes commented alternative EKS configuration
+# - Uses base64 decoded certificates
+# - Supports workspace-based environment management

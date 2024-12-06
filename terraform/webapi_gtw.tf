@@ -1,5 +1,5 @@
 # # ----------------------------------------------------------------------------------------------------
-# # Rest API Gateway - usieng GET, POST, PUT, DELETE 
+# # Rest API Gateway - using GET, POST, PUT, DELETE 
 # # ----------------------------------------------------------------------------------------------------
 
 # Define the API Gateway REST API with regional endpoint type
@@ -459,3 +459,28 @@ resource "aws_api_gateway_stage" "api_stage" {
 }
 
 # # ----------------------------------------------------------------------------------------------------
+
+# This Terraform configuration establishes a comprehensive REST API Gateway infrastructure for a jokes service with full CRUD (Create, Read, Update, Delete) capabilities:  
+#
+# Architecture Overview - Creates a Regional REST API Gateway with two paths:
+#     /jokes for bulk operations
+#     /jokes/{Id} for individual joke management
+#
+# Core Functionality:
+# - CREATE: Adds jokes via POST
+# - READ: Retrieves jokes via GET
+# - UPDATE: Modifies jokes via PUT
+# - DELETE: Removes jokes via DELETE
+#
+# Technical Implementation:
+#   1.  Gateway Integration:
+#   - Full CORS support
+#   - Lambda backend integration
+#   - Error handling and response mapping
+#
+#   2.  Security & Deployment:
+#   - Secure Lambda permissions
+#   - Staged deployment
+#   - Production-ready configuration
+
+# The infrastructure provides complete API management for a scalable jokes service using Lambda and DynamoDB.

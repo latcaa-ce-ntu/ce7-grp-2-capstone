@@ -1,11 +1,12 @@
-# ecs_cluster_name = "azmi1-ecs-cluster-dev"
+# name_prefix = "ce7-grp-2-dev"
 
-# ecs_task_def_family = "azmi1-task-definition-dev"
+# env = "dev"
 
-# ecs_service_name = "azmi1-nginx-service-dev"
+# region = "us-east-1"
 
-# alb_name = "azmi1-nginx-alb-dev"
+# vpc_cidr = "10.0.0.0/16"
 
-# alb_tg_name = "azmi1-nginx-tg-dev"
-
-# container_name = "azmi1-nginx-container-dev"
+# Development environment configuration
+# - Uses 10.0.0.0/16 VPC CIDR
+# - Resources will be prefixed with ce7-grp-2-dev
+# - For testing and development purposes
