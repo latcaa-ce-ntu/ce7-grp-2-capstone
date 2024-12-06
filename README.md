@@ -2,11 +2,11 @@
 
 # CE7 Group 2 Capstone Project  
 ## Team Members :  
-1. Alan Peh
-2. Andy Liew
-3. Azmi Maniku
-4. Lovell Tan
-5. Wong Teck Choy
+1. **Alan Peh**
+2. **Andy Liew**
+3. **Azmi Maniku**
+4. **Lovell Tan**
+5. **Wong Teck Choy**
                 
 ## Project Objectives
 1. Create A simple Web App that allows users to read new jokes with each click of a button. 
@@ -29,30 +29,30 @@
 
 **Pros**  
 
-- Simplicity: This strategy is straightforward, making it easier for teams to understand and implement. Developers can work directly in the DEV branch, and changes flow through UAT to PROD without complex branching structures.
-- Continuous Development: Development can continue uninterrupted during releases, as new features can be worked on in the DEV branch while UAT and PROD are being updated.
-- Clear Environment Segregation: Each branch corresponds to a specific environment (DEV for development, UAT for testing, PROD for production), which helps maintain clarity about what code is being tested or deployed.
-- Hotfix Management: The strategy allows for quick hotfixes directly to the PROD branch without disrupting ongoing development.
+- **Simplicity**: This strategy is straightforward, making it easier for teams to understand and implement. Developers can work directly in the DEV branch, and changes flow through UAT to PROD without complex branching structures.
+- **Continuous Development**: Development can continue uninterrupted during releases, as new features can be worked on in the DEV branch while UAT and PROD are being updated.
+- **Clear Environment Segregation**: Each branch corresponds to a specific environment (DEV for development, UAT for testing, PROD for production), which helps maintain clarity about what code is being tested or deployed.
+- **Hotfix Management**: The strategy allows for quick hotfixes directly to the PROD branch without disrupting ongoing development.
   
 **Cons**  
 
-- Limited Control Over Releases: If multiple features are in development, it can be challenging to release only certain features if others are not ready. This can lead to delays or the need for complex merges.  
-- Potential for Code Drift: Continuous merging into DEV could lead to integration issues if not managed properly, as features might not be tested together until later stages.  
-- Less Granular Control: Compared to GitFlow, this strategy may provide less control over which features are included in each release since it typically promotes all changes from DEV to UAT at once.  
+- **Limited Control Over Releases**: If multiple features are in development, it can be challenging to release only certain features if others are not ready. This can lead to delays or the need for complex merges.  
+- **Potential for Code Drift**: Continuous merging into DEV could lead to integration issues if not managed properly, as features might not be tested together until later stages.  
+- **Less Granular Control**: Compared to GitFlow, this strategy may provide less control over which features are included in each release since it typically promotes all changes from DEV to UAT at once.  
 
 ### Pros and Cons of GitFlow  
 
 **Pros**  
 
-- Structured Release Process: GitFlow offers a more structured approach with dedicated branches for features, releases, and hotfixes, allowing teams to manage releases more granularly.  
-- Isolation of Features: Each feature can be developed in isolation on its own branch, reducing the risk of conflicts and making it easier to manage complex projects with multiple features being developed simultaneously.  
-- Selective Merging: Teams can cherry-pick which features to promote to production by merging specific branches rather than merging everything from DEV at once. This allows for more control over what goes live.  
+- **Structured Release Process**: GitFlow offers a more structured approach with dedicated branches for features, releases, and hotfixes, allowing teams to manage releases more granularly.  
+- **Isolation of Features**: Each feature can be developed in isolation on its own branch, reducing the risk of conflicts and making it easier to manage complex projects with multiple features being developed simultaneously.  
+- **Selective Merging**: Teams can cherry-pick which features to promote to production by merging specific branches rather than merging everything from DEV at once. This allows for more control over what goes live.  
   
 **Cons**  
 
-- Complexity: The additional branches and rules can complicate the workflow, especially for smaller teams or projects. New team members may find it harder to navigate compared to simpler strategies like Dev, UAT, Prod.  
-- Slower Release Cycles: The structured nature of GitFlow may slow down the release process since features must go through multiple branches and approvals before reaching production.  
-- Overhead Management: Managing multiple branches requires more overhead in terms of maintaining them and ensuring they are up-to-date with the latest changes from other branches.  
+- **Complexity**: The additional branches and rules can complicate the workflow, especially for smaller teams or projects. New team members may find it harder to navigate compared to simpler strategies like Dev, UAT, Prod.  
+- **Slower Release Cycles**: The structured nature of GitFlow may slow down the release process since features must go through multiple branches and approvals before reaching production.  
+- **Overhead Management**: Managing multiple branches requires more overhead in terms of maintaining them and ensuring they are up-to-date with the latest changes from other branches.  
 
 ### Conclusion  
 
@@ -65,23 +65,24 @@ Moving from uat branch to prod branch will be a manual pull request.
 
 ## OpenID Connect (OIDC)  
 
+
 ### Advantages
-GitHub OpenID Connect (OIDC) allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
+**GitHub OpenID Connect (OIDC)** allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
 ![image](https://github.com/user-attachments/assets/aa51e9c6-ca29-4458-8510-e9a1595fa9df)
 
 GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:  
 
-1. Elimination of Long-Lived Secrets  
+1. **Elimination of Long-Lived Secrets**  
     - OIDC removes the need for storing long-lived cloud credentials in GitHub, reducing the risk of credential exposure.  
-2. Enhanced Security with Temporary Credentials  
+2. **Enhanced Security with Temporary Credentials**  
     - Tokens are short-lived, minimizing the impact of any potential compromise since they expire quickly.  
-3. Simplified Credential Management  
+3. **Simplified Credential Management**  
     - OIDC streamlines credential management by eliminating the need for manual rotation and updates, leading to increased efficiency.  
-4. Improved Access Control  
+4. **Improved Access Control**  
     - Organizations can define specific permissions for access tokens, enhancing security by ensuring only authorized workflows can access resources.  
-5. Seamless Integration with Cloud Providers  
+5. **Seamless Integration with Cloud Providers**  
     - OIDC supports multiple cloud providers, allowing teams to deploy applications without changing authentication methods.  
-6. Better Compliance with Security Standards  
+6. **Better Compliance with Security Standards**  
     - Adopting OIDC helps organizations align with security best practices, minimizing the use of long-lived credentials.  
 
 ### Conclusion  
@@ -158,19 +159,19 @@ However, understanding that AWS Elastic Kubernetes Service (EKS) tends to be the
 We have decided to use github container registry (ghcr) for this project instead of other options like AWS Elastic Container Registry (ECR) or Docker Hub.
 Following are some advantages of using ghcr:
 
-1. Cost Efficiency
+1. **Cost Efficiency**
     - Free for Open Source: GHCR is free for public repositories, making it ideal for open-source projects, while ECR can incur costs for private repositories.
-2. Seamless Integration with GitHub
+2. **Seamless Integration with GitHub**
     - CI/CD Support: Direct integration with GitHub Actions simplifies the automation of building and deploying container images.
-3. No Pull Limits
+3. **No Pull Limits**
     - Relaxed Rate Limits: GHCR allows unlimited pulls, reducing the risk of deployment delays compared to Docker Hub's rate limits.
-4. Simplified Authentication
+4. **Simplified Authentication**
     - Personal Access Tokens: Easier authentication through personal access tokens compared to the more complex AWS IAM policies used by ECR.
-5. Multi-Architecture Support
+5. **Multi-Architecture Support**
     - Automatic Image Selection: Supports multi-architecture images, allowing automatic selection based on CPU architecture.
-6. User-Friendly Interface
+6. **User-Friendly Interface**
     - Familiarity: Provides a familiar interface for GitHub users, reducing the learning curve and increasing productivity.
-7. Flexibility in Image Management
+7. **Flexibility in Image Management**
     - Tagging and Versioning: Offers flexible tagging and versioning, essential for continuous integration and delivery practices.
 
 In summary, GHCR provides significant advantages in cost, integration, ease of use, and flexibility, making it a strong choice for developers leveraging GitHub.
@@ -1030,6 +1031,7 @@ project-root/
 ├── webapi_gtw.tf                     # A file that defines the resources for the AWS API Gateway.  
 └── README.md                         # Documentation for the setup and usage
 ```
+
 ## The Great Laugh - Joke Web Application
 Imagine a simple, fun, and engaging web application designed to deliver random jokes at the click of a button. Introducing The Great Laugh — a joke-sharing platform that’s not just about laughter but also showcases cutting-edge technology and serverless architecture.
 
@@ -1042,30 +1044,39 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 ![mgmtpage](https://github.com/user-attachments/assets/c0d5ce22-fb80-4512-95fb-d6539bee8b0e)
 
 ### Key Features
-1. Random Joke Generator
+#### 1. Random Joke Generator
+   
 - Click a button to fetch a random joke from a dynamic pool of jokes.
 - Each joke is retrieved through serverless APIs backed by AWS tools.
 - Joke Management Interface
 
-2. A sleek and user-friendly interface allows users to:
+#### 2. A sleek and user-friendly interface allows users to:
 - Create new jokes.
 - Edit existing jokes.
 - Delete jokes they no longer find funny.
 
 ### Technologies Used
-1. Frontend is built using:
-- **Python**: Handles dynamic components of the application.
-- **JavaScript**: Powers interactivity like button clicks and API calls.
-- **HTML & CSS**: Provide a responsive and fun user interface.
-- The entire frontend runs in a **Docker container** for easy portability and scaling.
 
-2. Backend (Serverless)
-The backend leverages **AWS serverless tools** for seamless management and scaling:
-- **API Gateway**: Exposes RESTful endpoints for joke-related operations (Create, Read, Update, Delete).
-- **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
-- **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+#### 1. Frontend is built using:
+   
+  - **Python**: Handles dynamic components of the application.
+  - **JavaScript**: Powers interactivity like button clicks and API calls.
+  - **HTML & CSS**: Provide a responsive and fun user interface.
+  - The entire frontend runs in a **Docker container** for easy portability and scaling.
 
-### Jokes web application files/folder
+#### 2. Backend (Serverless):
+   
+  The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with **GitHub Workflows** for continuous integration and deployment:
+  - **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
+  - **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
+  - **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+
+#### 3. Build and Deployment
+   
+  - **Terraform**: Infrastructure as Code (IaC) is used to provision and configure serverless resources in AWS.
+  - **GitHub Workflows**: Automates the CI/CD pipeline, running Terraform scripts to deploy backend changes seamlessly upon code updates.
+
+### Web Application files/folder structures
 
 ```sh
 Jokes-webapp-v2
@@ -1115,7 +1126,7 @@ AWS IAM secures access to resources in your AWS environment. It lets you create 
 ![IamPolicy](https://github.com/user-attachments/assets/a65c7531-68dd-47fe-915e-1b19a722ddad)
 
 ## Project Management and Future Areas for Improvement
-A simple Jira Kanban Board was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
+A simple **Jira Kanban Board** was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
 
 https://tanlye.atlassian.net/jira/software/projects/CE7/boards/1?atlOrigin=eyJpIjoiOWY0ZmFhMmE5OTFkNGEyZGI3OTI2YzQyMDNkMGEwYmEiLCJwIjoiaiJ9
 
