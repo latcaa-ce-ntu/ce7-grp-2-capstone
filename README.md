@@ -99,7 +99,13 @@ permissions:
 ```
 </details>
 
-## Containerization
+## Containerization & Container Management
+
+### Container Orchestration Solution 
+Initially, the team considered deploying the containerized web app to AWS Elastic Constainer Service (ECS) given the relatively small scale of the project and lack of experience with EKS. 
+
+However, understanding that AWS Elastic Kubernetes Service (EKS) tends to be the industry standard and offers greater customization flexibility, EKS was eventually selected as the Container Orchestration Solution for the project. 
+
 ### Container Registry selection
 
 We have decided to use github container registry (ghcr) for this project instead of other options like AWS Elastic Container Registry (ECR) or Docker Hub.
@@ -125,7 +131,7 @@ In summary, GHCR provides significant advantages in cost, integration, ease of u
 
 ### Secrets Management
 
-We are using Github Actions Secrets for all of our secrets in this repo for ease of integration with Github Actions workflow. 
+We are using Github Actions Secrets for all of our secrets in this repo for ease of integration with Github Actions workflow. Moreover, third-party secret management tools are unnecessary as the number of secrets need to be stored is small. 
 
 ### Environment handling
 
@@ -134,9 +140,9 @@ Instead we re-use the same vpc and eks cluster. Then use kubernetes namespaces (
 Understandably, in a large enough organization, it will be prudent to separate the cloud infra into different environments.
 However, for our small capstone project, we have opted to save on costs of running multiple eks clusters.
 
-### Kuberneter Cluster - Key Setup Features
-#### Auto-scaling & self-healing
-By default, 2 worker nodes are running at all times. However this can be scaled up or down to 1-3 nodes depending on load. 
+### Kubernetes Cluster - Key Setup Features
+#### Auto-scaling
+By default, 2 worker nodes are running at all times to ensure steady performance. However this can be auto-scaled up or down to 1-3 nodes depending on workload. 
 
 <details>
   
@@ -751,6 +757,13 @@ A fully managed NoSQL database, Amazon DynamoDB is designed for high availabilit
 AWS IAM secures access to resources in your AWS environment. It lets you create users, roles, and policies to control who can access what. For serverless architectures, IAM ensures that services like API Gateway and Lambda interact securely with DynamoDB or other resources, following the principle of least privilege.
 
 ![IamPolicy](https://github.com/user-attachments/assets/a65c7531-68dd-47fe-915e-1b19a722ddad)
+
+## Project Management and Future Areas for Improvement
+A simple Jira Kanban Board was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
+
+https://tanlye.atlassian.net/jira/software/projects/CE7/boards/1?atlOrigin=eyJpIjoiOWY0ZmFhMmE5OTFkNGEyZGI3OTI2YzQyMDNkMGEwYmEiLCJwIjoiaiJ9
+
+![image](https://github.com/user-attachments/assets/4ad406bf-9eba-4ca7-bdb1-7877a11ff899)
 
 
 ## References
