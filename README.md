@@ -1,7 +1,13 @@
 ![Alt Text](https://github.com/lann87/cloud_infra_eng_ntu_coursework_alanp/blob/main/.misc/ntu_logo.png)  
 
 # CE7 Group 2 Capstone Project  
-
+## Team Members :  
+1. Alan Peh
+2. Andy Liew
+3. Azmi Maniku
+4. Lovell Tan
+5. Wong Teck Choy
+                
 ## Project Objectives
 1. Create A simple Web App that allows users to read new jokes with each click of a button. 
 2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB.
