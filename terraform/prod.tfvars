@@ -1,11 +1,7 @@
-# ecs_cluster_name = "azmi1-ecs-cluster-prod"
+# name_prefix = "ce7-grp-2-prod"
 
-# ecs_task_def_family = "azmi1-task-definition-prod"
+# env = "prod"
 
-# ecs_service_name = "azmi1-nginx-service-prod"
+# region = "us-east-1"
 
-# alb_name = "azmi1-nginx-alb-prod"
-
-# alb_tg_name = "azmi1-nginx-tg-prod"
-
-# container_name = "azmi1-nginx-container-prod"
+# vpc_cidr = "10.2.0.0/16"  # Different CIDR for production environment

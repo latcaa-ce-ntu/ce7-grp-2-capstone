@@ -16,3 +16,17 @@ resource "aws_lambda_function" "jokes_lambda" {
     }
   }
 }
+
+# Lambda Function Configuration Summary
+
+# Creates AWS Lambda function for jokes service with:
+# 1.  Custom handler with prefix
+# 2.  Python runtime
+# 3.  IAM role access
+# 4.  DynamoDB integration via environment variable
+
+# Components
+# - Customized naming with prefix
+# - Links to IAM execution role
+# - Manages jokes data through DynamoDB
+# - Deployed via zip package
