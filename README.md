@@ -9,8 +9,8 @@
 5. **Wong Teck Choy**
                 
 ## Project Objectives
-1. Create A simple Web App that allows users to read new jokes with each click of a button. 
-2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB.
+1. Create a simple Web App that allows users to read new jokes with each click of a button. 
+2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB with Joke generation using AWS Lambda function.
 3. Build AWS infrastructure using Terraform
 4. Implement CI/CD pipeline using Github Actions to build infrastructure, perform relevant tests on Terraform code/k8s files/Web App python code/Dockerfiles and automate deployment from testing to live environment.
 5. Use AWS EKS as the container orchestration platform
@@ -540,10 +540,16 @@ resource "kubernetes_service_account" "prod_service_account" {
 
 #### Security - EKS & Load Balancer
 Currently, there is minimal restriction to the flow of traffic from the Internet to Load Balancer to EKS Nodes and vice versa. 
-The general Traffic flow is as such:
+The general Traffic Flow is as such:
+Internet -> (port 80) Load Balancer  -> (NodePorts 30000 to 32767) EKS Cluster Nodes -> Application Pods
+
+> [!CAUTION]
+> Our aws_security_group allows **all** inbound traffic and outbound traffic between the internet and the EKS nodes. This was done for ease of the project and to ensure smooth demonstration. 
+> However, as per Terrascan warnings - best practice would be to ensure all outbound traffic is monitored and restricted to specific ports or required external IPs, and all inbound traffic is restricted to trusted IPs.
+> 
+> <img src="https://github.com/user-attachments/assets/9d2d7b42-3eef-4a87-b2a8-29829865b29b" alt="Image description" width="400"><img src="https://github.com/user-attachments/assets/9d2d7b42-3eef-4a87-b2a8-29829865b29b" alt="Image description" width="400">
 
 
-Nodegroups:
 
 
 ## CI/CD Pipelines
@@ -655,6 +661,7 @@ We also have Sonarqube integrated into our repo so it runs code scans on the rep
 </details>
 
 2. Terrascan IAC Scan
+Snyk was the initial choice for IAC scan. However as the free version of Snyk limits the number of runs allowed, the team switched to use Terrascan.
 <details>
   
 ```yml
