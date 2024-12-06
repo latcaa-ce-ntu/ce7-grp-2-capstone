@@ -205,6 +205,77 @@ By default, 2 worker nodes are running at all times to ensure steady performance
 </details>
 
 #### Security - Logging
+Logs from the Application Load Balancer were activated and stored in an S3 bucket. Some security measures implemented for logs include:
+1. Blocking Public Access to s3 bucket
+2. Server-Side Encryption (SSE) - All objects stored in S3 bucket are encrypted using AES-256 encryption by default
+3. Enabling Versioning on S3 bucket - allows older versions of logs to be accessed easily for auditing/monitoring/troubleshooting
+4. S3 bucket policy that allows only the specific ALB service account from us-east-1 region to write and upload logs into the bucket.  
+<details>
+  
+```
+# Block all public access to the bucket for security 
+resource "aws_s3_bucket_public_access_block" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  block_public_acls       = true # Prevent public ACLs
+  block_public_policy     = true # Prevent public bucket policies  
+  ignore_public_acls      = true # Ignore any public ACLs
+  restrict_public_buckets = true # Restrict public bucket access
+}
+
+# Enable server-side encryption for all objects
+resource "aws_s3_bucket_server_side_encryption_configuration" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256" # Use AES-256 encryption
+    }
+  }
+}
+
+# Enable versioning to maintain log history
+resource "aws_s3_bucket_versioning" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+
+# Configure bucket policy to allow ALB to write logs
+resource "aws_s3_bucket_policy" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::127311923021:root" # AWS ALB service account for us-east-1
+        }
+        Action = [
+          "s3:PutObject" # Allow writing objects (logs)
+        ]
+        Resource = "${aws_s3_bucket.lb_logs.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com" # ALB log delivery service
+        }
+        Action = [
+          "s3:PutObject" # Allow writing objects (logs)
+        ]
+        Resource = "${aws_s3_bucket.lb_logs.arn}/*"
+      }
+    ]
+  })
+}
+```
+</details>
+
 #### Security - IAM
 Distinct IAM roles were created for EKS cluster and worker nodes on a needs-only basis, ensuring clear boundaries for permissions and minimizing potential risks.
 1. EKS cluster role
@@ -240,9 +311,10 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 </details>
 
 2. Node role
-- Allows worker nodes to access AWS services
-- Includes policies for container operations
-- Enables networking features
+- Allows EC2 Instances/EKS worker nodes to access AWS services; namely to
+  - interact with the EKS cluster and manage workloads
+  - access network functionalities
+  - pull container images from ECR
   
 <details>
   
@@ -286,6 +358,8 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry" {
 }
 ```
 </details>
+
+
 
 Nodegroups:
 
