@@ -769,34 +769,39 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 ![mgmtpage](https://github.com/user-attachments/assets/c0d5ce22-fb80-4512-95fb-d6539bee8b0e)
 
 ### Key Features
-1. Random Joke Generator
+#### 1. Random Joke Generator
+   
 - Click a button to fetch a random joke from a dynamic pool of jokes.
 - Each joke is retrieved through serverless APIs backed by AWS tools.
 - Joke Management Interface
 
-2. A sleek and user-friendly interface allows users to:
+#### 2. A sleek and user-friendly interface allows users to:
 - Create new jokes.
 - Edit existing jokes.
 - Delete jokes they no longer find funny.
 
 ### Technologies Used
-1. **Frontend is built using**:
-- **Python**: Handles dynamic components of the application.
-- **JavaScript**: Powers interactivity like button clicks and API calls.
-- **HTML & CSS**: Provide a responsive and fun user interface.
-- The entire frontend runs in a **Docker container** for easy portability and scaling.
 
-2. **Backend (Serverless)**:
-- The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with GitHub Workflows for continuous integration and deployment:
-- **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
-- **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
-- **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+#### 1. Frontend is built using:
+   
+  - **Python**: Handles dynamic components of the application.
+  - **JavaScript**: Powers interactivity like button clicks and API calls.
+  - **HTML & CSS**: Provide a responsive and fun user interface.
+  - The entire frontend runs in a **Docker container** for easy portability and scaling.
 
-3. **Build and Deployment**
-- **Terraform**: Infrastructure as Code (IaC) is used to provision and configure serverless resources in AWS.
-- **GitHub Workflows**: Automates the CI/CD pipeline, running Terraform scripts to deploy backend changes seamlessly upon code updates.
+#### 2. Backend (Serverless):
+   
+  The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with GitHub Workflows for continuous integration and deployment:
+  - **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
+  - **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
+  - **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
 
-### Jokes web application files/folder
+#### 3. Build and Deployment
+   
+  - **Terraform**: Infrastructure as Code (IaC) is used to provision and configure serverless resources in AWS.
+  - **GitHub Workflows**: Automates the CI/CD pipeline, running Terraform scripts to deploy backend changes seamlessly upon code updates.
+
+### Web Application files/folder structures
 
 ```sh
 Jokes-webapp-v2
