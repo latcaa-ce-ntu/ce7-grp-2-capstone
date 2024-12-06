@@ -99,6 +99,12 @@ jobs:
 
   Terrascan-IAC:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -113,21 +119,23 @@ jobs:
           only_warn: true
           sarif_upload: true
 
-      - name: Run Terrascan for Kubernetes
-        uses: tenable/terrascan-action@main
-        with:
-          iac_type: "k8s"
-          policy_type: "aws"
-          only_warn: true
-          sarif_upload: true
+      # We can comment this out because we don't have any kubernetes yaml to scan at this point.
+      # - name: Run Terrascan for Kubernetes
+      #   uses: tenable/terrascan-action@main
+      #   with:
+      #     iac_type: "k8s"
+      #     policy_type: "aws"
+      #     only_warn: true
+      #     sarif_upload: true
 
-      - name: Run Terrascan for Docker
-        uses: tenable/terrascan-action@main
-        with:
-          iac_type: "docker"
-          policy_type: "aws"
-          only_warn: true
-          sarif_upload: true
+      # We can comment this out because our docker scans are taken care of in the docker-ci.
+      # - name: Run Terrascan for Docker
+      #   uses: tenable/terrascan-action@main
+      #   with:
+      #     iac_type: "docker"
+      #     policy_type: "aws"
+      #     only_warn: true
+      #     sarif_upload: true
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
