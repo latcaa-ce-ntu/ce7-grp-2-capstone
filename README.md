@@ -1570,7 +1570,7 @@ project-root/
 │   │   ├── variables.tf              # EKS module variables
 │   │   └── versions.tf               # EKS module versioning
 │   │
-│   └── vpc/                          # VPC module
+│   └── network/                      # VPC module
 │       ├── vpc.tf                    # VPC, IGW, NAT GW, and Elastic IPs
 │       ├── network.tf                # Subnets, Route Tables, and Route Tables Association.
 │       ├── variables.tf              # VPC module variables
