@@ -67,6 +67,7 @@ jobs:
         run: |
           # Run terraform validate and capture output
           output=$(terraform validate -no-color) || true
+
           if [ $? -eq 0 ]; then
             echo "Terraform configuration is valid." >> $GITHUB_STEP_SUMMARY
           else
