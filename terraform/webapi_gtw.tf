@@ -53,7 +53,7 @@ resource "aws_api_gateway_method" "get_jokes" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_resource.id
   http_method   = "GET"
-  authorization = "NONE"  // nosonar 
+  authorization = "NONE" // nosonar 
 }
 
 # Define the POST method
@@ -61,7 +61,7 @@ resource "aws_api_gateway_method" "post_jokes" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_resource.id
   http_method   = "POST"
-  authorization = "NONE"  // nosonar
+  authorization = "NONE" // nosonar
 }
 
 # Define the OPTIONS method
@@ -69,7 +69,7 @@ resource "aws_api_gateway_method" "options_cors" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_resource.id
   http_method   = "OPTIONS"
-  authorization = "NONE"  // nosonar
+  authorization = "NONE" // nosonar
 }
 
 # # ----------------------------------------------------------------------------------------------------
@@ -81,7 +81,7 @@ resource "aws_api_gateway_method" "put_joke_by_id" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_id_resource.id
   http_method   = "PUT"
-  authorization = "NONE"  // nosonar
+  authorization = "NONE" // nosonar
 
   # Define the path parameter 'Id'
   request_parameters = {
@@ -94,14 +94,14 @@ resource "aws_api_gateway_method" "delete_joke_by_id" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_id_resource.id
   http_method   = "DELETE"
-  authorization = "NONE"  // nosonar
+  authorization = "NONE" // nosonar
 }
 
 resource "aws_api_gateway_method" "options_joke_by_id" {
   rest_api_id   = aws_api_gateway_rest_api.jokes_api.id
   resource_id   = aws_api_gateway_resource.jokes_id_resource.id
   http_method   = "OPTIONS"
-  authorization = "NONE"  // nosonar
+  authorization = "NONE" // nosonar
 }
 
 # # ----------------------------------------------------------------------------------------------------
