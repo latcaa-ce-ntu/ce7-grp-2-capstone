@@ -798,18 +798,6 @@ Code-Checks:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Set up environment variables
-      #   env:
-      #     API_URL: ${{ secrets.API_URL }}
-      #   run: |
-      #     echo "API_URL=$API_URL" >> .env
-
-      # - name: Verify .env content
-      #   run: |
-      #     # Display the contents of the .env file for debugging
-      #     echo "Contents of .env file:"
-      #     cat .env
-
       - name: Build an image from Dockerfile
         id: docker-build
         run: |
