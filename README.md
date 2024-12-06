@@ -65,6 +65,7 @@ Moving from uat branch to prod branch will be a manual pull request.
 
 ## OpenID Connect (OIDC)  
 
+### Advantages
 GitHub OpenID Connect (OIDC) allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
 ![image](https://github.com/user-attachments/assets/aa51e9c6-ca29-4458-8510-e9a1595fa9df)
 
@@ -88,15 +89,61 @@ GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:
 OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow. 
 Potential areas for improvement: Restrict Access to different resources created based on specific user roles (IAM) that authenticate using OIDC.
 
+### Implementation
+
+Create a IAM Role in AWS with required aws permissions and a trust relationship for github.
+<img width="1244" alt="image" src="https://github.com/user-attachments/assets/6c7c7bcb-40a3-439b-906b-37ebb7c250b8">
+
+> [!CAUTION]
+> We have used Administrator Access for this role for ease of use in this capstone project.
+> However, best practice would be to use principle of least privilege and only give access to the required aws resources.
+
 <details>
 
+Trust Relationship:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::<redacted>:oidc-provider/token.actions.githubusercontent.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                },
+                "StringLike": {
+                    "token.actions.githubusercontent.com:sub": "repo:latcaa-ce-ntu/ce7-grp-2-capstone:*"
+                }
+            }
+        }
+    ]
+}
 ```
+Create a github actions secret `ROLE_TO_ASSUME` with the arn of the IAM role.
+
+Github Actions permissions:
+                  
+```yml
 permissions:
   id-token: write # This is required for requesting the JWT
-  contents: write # This is required for actions/checkout
-  packages: write
-  attestations: write
+
 ```
+configure-aws-credentials action:
+
+```yml
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+```
+
 </details>
 
 ## Containerization & Container Management
@@ -248,34 +295,258 @@ IAM:
     - Policies:
 
 ## CI/CD Pipelines
+
+### Advantages of Separating Terraform and Docker CI/CD Workflows
+1. Clear Separation of Concerns: Distinct workflows allow teams to focus on infrastructure (Terraform) and application deployment (Docker) independently, clarifying roles and responsibilities.
+2. Improved Modularity: Modular Terraform configurations can be reused across projects without being tied to specific Docker setups, enhancing maintainability.
+3. Enhanced Security: Different access controls can be implemented for infrastructure and application workflows, improving security by limiting permissions based on team roles.
+4. Simplified CI/CD Pipelines: Independent pipelines make debugging and maintenance easier, as issues in one workflow do not affect the other.
+5. Easier Environment Management: Separate workflows facilitate managing different environments (development, staging, production), reducing the risk of cross-environment issues.
+6. Optimized Resource Management: Infrastructure can scale independently from application needs, allowing for more efficient resource allocation.
+7. Better Testing and Validation: Independent testing strategies for infrastructure and application code ensure both components function correctly before integration.
+
+In summary, separating these workflows enhances clarity, security, modularity, and efficiency in managing infrastructure and application deployments within a DevOps framework.
+
 ### Terraform CI
 
-Terraform files are stored in ```terraform/``` directory in the repo.
-We implement the following checks for our Terraform CI workflow:
+Terraform files are stored in `terraform/` directory in the repo.
+Adopting a shift-left security approach, we implement the following checks for our Terraform CI workflow:
 
-1. Terraform format
-2. Terraform init
-3. Terraform validate
-4. TFLint
-5. Sonarqube IAC scan
-6. IAC Scan
-7. Checkov Scan
-8. Terraform plan
+1. Terraform checks
+    - Terraform format
+    - Terraform init
+    - Terraform validate
+    - TFLint
+<details>
+  
+```yml
+  Terraform-Checks:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt check
+        id: fmt
+        run: |
+          # Run terraform fmt check and capture output
+          output=$(terraform fmt -check) || true
+          echo "$output" >> $GITHUB_STEP_SUMMARY  # Append output to step summary
+
+          # Check if formatting issues were found
+          if [ $? -ne 0 ]; then
+            echo "Formatting issues found!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "All files are properly formatted." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Terraform init
+        id: init
+        run: |
+          # Run terraform init and capture output
+          output=$(terraform init -backend=false 2>&1) || true
+
+          # Check if initialization was successful
+          if [ $? -eq 0 ]; then
+            echo "Terraform initialized successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Terraform initialization failed with the following error:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append error output to summary
+          fi
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          # Run terraform validate and capture output
+          output=$(terraform validate -no-color) || true
+          if [ $? -eq 0 ]; then
+            echo "Terraform configuration is valid." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Terraform configuration is invalid:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append validation errors to summary
+          fi
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Show TFLint version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        id: tflint
+        run: |
+          # Run TFLint and capture output
+          output=$(tflint -f compact) || true
+
+          # Check if there were any linting issues
+          if [ $? -eq 0 ]; then
+            echo "TFLint found no issues." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "TFLint found the following issues:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append linting output to summary
+          fi
+```
+
+</details>
+
+2. Terrascan IAC Scan
+<details>
+  
+```yml
+  Terrascan-IAC:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Terrascan for Terraform
+        id: terrascan
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: "terraform"
+          iac_version: "v14"
+          policy_type: "aws"
+          only_warn: true
+          sarif_upload: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: terrascan.sarif
+```
+
+</details>
+
+3. Terraform plan
+<details>
+  
+```yml
+  Terraform-Plan:
+    needs: [Terraform-Checks, Terrascan-IAC]
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        id: plan
+        run: |
+          terraform plan -no-color -var-file="${{ github.base_ref }}.tfvars" -out=tfplan > plan_output.txt 2>&1 || true
+          echo "## Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat plan_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Plan (Workflow Dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: plan-dispatch
+        run: |
+          terraform plan -no-color -var-file="${{ github.ref_name }}.tfvars" -out=tfplan > plan_output.txt 2>&1 || true
+          echo "## Terraform Plan Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat plan_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+```
+
+</details>
 
 ### Terraform CD
 
 Our terraform CD workflow only consists of one step since all the checks have been done in the CI workflow.
 
 1. Terraform Apply
+<details>
+  
+```yml
+  Terraform-Apply:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -no-color -auto-approve -var-file="${{ github.ref_name }}.tfvars"
+
+      - name: Export terraform outputs
+        id: tfout
+        run: |
+          terraform output
+
+```
+
+</details>
 
 ### Docker CI
 
-Docker files are stored in the ```files/``` directory in the repo.
-We implement the following checks for our Docker CI workflow:
+Docker and application files are stored in their own directory in the repo. `jokes-webapp-v#` in thie instance.
+We have tried to design the workflow to be app agnostic. Currently, these workflows will work with both js and python projects.
+Adopting a shift-left security approach, we implement the following checks for our Docker CI workflow:
 
-#### Python Safety Scan
+#### Check project type
+  - Checks if the project is a python or js node project.
+#### NPM Audit (js)
+  - Analyzes the dependencies listed in your project's package.json file and checks them against a database of known vulnerabilities, including those from the GitHub Advisory Database, which encompasses vulnerabilities from various ecosystems.
+#### NPM Test (js)
+  - Command that runs the test script defined in the "test" property of a project's package.json file, executing automated unit tests for the codebase.
+#### Python Safety Scan (py)
   - Scans for vulnerabilities in third-party libraries and dependencies specified in requirements files.
-#### Python Bandit Scan
+#### Python Bandit Scan (py)
   - Only scans the application code itself, detecting issues directly within the codebase.
 #### Sonarqube scan
   - Analyzes source code to detect bugs, vulnerabilities, and code smells, providing insights into code quality and enabling teams to maintain clean and secure codebases.
@@ -285,6 +556,9 @@ We implement the following checks for our Docker CI workflow:
   - An open-source vulnerability scanner that identifies known security vulnerabilities in container images and filesystems.
 #### Docker run test
   - Runs the Docker container to make sure it can launch successfully.
+#### ZAP Scan
+  - OWASP ZAP (Zed Attack Proxy) is an open-source web application DAST security scanner that identifies vulnerabilities and security issues by simulating attacks on web applications.
+
 
 ### Docker CD
 
