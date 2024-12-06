@@ -39,11 +39,11 @@ jobs:
         run: |
           # Run terraform fmt check and capture output
           output=$(terraform fmt -check) || true
-          echo "$output" >> $GITHUB_STEP_SUMMARY  # Append output to step summary
 
           # Check if formatting issues were found
           if [ $? -ne 0 ]; then
             echo "Formatting issues found!" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append output to step summary
           else
             echo "All files are properly formatted." >> $GITHUB_STEP_SUMMARY
           fi
@@ -67,6 +67,7 @@ jobs:
         run: |
           # Run terraform validate and capture output
           output=$(terraform validate -no-color) || true
+
           if [ $? -eq 0 ]; then
             echo "Terraform configuration is valid." >> $GITHUB_STEP_SUMMARY
           else
