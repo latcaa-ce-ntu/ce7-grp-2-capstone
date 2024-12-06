@@ -2,7 +2,7 @@
 resource "aws_security_group" "eks_cluster_sg" {
   name_prefix = "${var.name_prefix}-eks-cluster-sg"
   vpc_id      = var.vpc_id
-  description = "Security group for the EKS cluster, allowing all inbound traffic from any source within the security group. Permits all outbound traffic."
+  description = "Security group for the EKS cluster, allowing all inbound traffic from any source within the security group and permits all outbound traffic."
 
   # Allow all traffic within the security group
   ingress {
