@@ -62,6 +62,12 @@ However, Gitflow introduces additional complexity that may not be necessary for 
 We are also implementing some continuous deployment by automatically merging dev branch to uat branch after a PR is successfully pushed to dev branch.
 Moving from uat branch to prod branch will be a manual pull request.
 
+## Branch Security
+The following branch security was implemented to ensure the integrity of the repository:
+1. Require pull request + Minimum 1 review approval before merging
+2. No force pushes allowed
+3. No force deletions allowed
+![image](https://github.com/user-attachments/assets/8d05dfc7-3d3f-47c6-82d5-92c0241cc1cd)
 
 ## OpenID Connect (OIDC)  
 
@@ -356,7 +362,7 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry" {
 </details>
 
 #### Security - Environment Separation and Role segregation
-Upon creation of EKS cluster, the clusters are further organized into 3 separate namespaces - dev, uat and prod - to achieve separate environments for our deployments/services/apps.
+Upon creation of EKS cluster, the clusters are further organized into 3 separate namespaces - **dev**, **uat** and **prod** - to achieve separate environments for our deployments/services/apps.
 
 <details> 
 
@@ -386,7 +392,8 @@ resource "kubernetes_namespace" "prod" {
 </details>
 
 
-Separate IAM roles - app_role_dev, app_role_uat, app_role_prod were also created and can only be assumed by specific service accounts ce7-grp2-sa-app-dev, ce7-grp2-sa-app-uat and ce7-grp2-sa-app-prod respectively through OpenID Connect (OIDC) authentication. If needed, each IAM role can be further configured to restrict access to AWS services depending on each role's needs e.g. 
+Separate IAM roles - **app_role_dev**, **app_role_uat**, **app_role_prod** were also created and can only be assumed by specific service accounts **ce7-grp2-sa-app-dev**, **ce7-grp2-sa-app-uat** and **ce7-grp2-sa-app-prod** respectively through OpenID Connect (OIDC) authentication. 
+If needed, each IAM role can be further configured to restrict access to AWS services depending on each role's needs. 
 
 <details> 
 
@@ -532,7 +539,8 @@ resource "kubernetes_service_account" "prod_service_account" {
 </details>
 
 #### Security - EKS & Load Balancer
-
+Currently, there is minimal restriction to the flow of traffic from the Internet to Load Balancer to EKS Nodes and vice versa. 
+The general Traffic flow is as such:
 
 
 Nodegroups:
