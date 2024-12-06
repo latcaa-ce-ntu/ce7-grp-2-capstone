@@ -17,6 +17,8 @@ resource "aws_lambda_function" "jokes_lambda" {
   }
 }
 
+# # ----------------------------------------------------------------------------------------------------
+
 # Lambda Function Configuration Summary
 
 # Creates AWS Lambda function for jokes service with:
