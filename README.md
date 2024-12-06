@@ -1559,7 +1559,7 @@ project-root/
 ├── terraform.tfvars                  # Contains values for the variables declared in variables.tf
 ├── modules/                          # Directory to hold all reusable Terraform modules
 │   │
-│   ├── alb/                          # EKS module
+│   ├── eks/                          # EKS module
 │   │   ├── eks.tf                    # EKS resources
 │   │   ├── iam.tf                    # IAM (Identity and Access Management) for EKS cluster
 │   │   ├── logging.tf                # Loadbalancer logging into S3
@@ -1570,7 +1570,7 @@ project-root/
 │   │   ├── variables.tf              # EKS module variables
 │   │   └── versions.tf               # EKS module versioning
 │   │
-│   └── vpc/                          # VPC module
+│   └── network/                      # VPC module
 │       ├── vpc.tf                    # VPC, IGW, NAT GW, and Elastic IPs
 │       ├── network.tf                # Subnets, Route Tables, and Route Tables Association.
 │       ├── variables.tf              # VPC module variables
@@ -1580,10 +1580,14 @@ project-root/
 ├── network.tf                        # Security groups and networking configurations.
 ├── container-definitions.json        # ECS task container definitions file (if needed)
 ├── ce7-grp-2-jokes-lambda.zip        # A ZIP file containing the Lambda function code. 
-├── dynamodb.tf                       # A file that defines resources related to DynamoDB.
-├── lambda.tf                         # A file that defines the resources for the AWS Lambda function.
+├── dynamodb.tf                       # DynamoDB table setup
+├── lambda.tf                         # Creates Lambda function for jokes service with Python, IAM, and DynamoDB integration.
 ├── webapi_gtw.tf                     # Sets up an API Gateway with Lambda integration for CRUD operations on a jokes service.  
-└── README.md                         # Documentation for the setup and usage
+├── README.md                         # Documentation for the setup and usage
+│
+├── dev.tfvars                        # Not utilised - Development settings 
+├── uat.tfvars                        # Not utilised - UAT settings
+└── prod.tfvars                       # Not utilised - Production settings
 ```
 
 ## The Great Laugh - Joke Web Application
