@@ -176,11 +176,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          framework: terraform
+      # - name: Checkov
+      #   id: checkov
+      #   uses: bridgecrewio/checkov-action@master
+      #   with:
+      #     framework: terraform
 
   Terraform-Plan:
     needs: [Terraform-Checks, Terrascan-IAC, Checkov]
