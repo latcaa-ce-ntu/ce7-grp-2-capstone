@@ -711,7 +711,10 @@ AWS provides powerful services that enable developers to build scalable, cost-ef
 ## API Gateway
 AWS API Gateway acts as the front door for applications, enabling developers to design, deploy, and manage RESTful APIs without worrying about infrastructure. It integrates seamlessly with other AWS services like Lambda and DynamoDB, allowing you to build robust serverless applications. Key features include request transformation, traffic throttling, and built-in authentication mechanisms.
 
-![API Gateway](https://github.com/user-attachments/assets/acf0d2e5-fc98-4fa5-9c12-b955ea44152a)
+## REST API with API Gateway
+A REST API is an architectural style that allows applications to interact over HTTP using standard methods like GET, POST, and DELETE. AWS API Gateway makes creating REST APIs simple, acting as a bridge between clients and backends such as Lambda functions or DynamoDB tables.
+
+![API Gateway](https://github.com/user-attachments/assets/34db84b9-2c02-40c2-a648-d7f352de21c6)
 
 ## AWS Lambda
 AWS Lambda is the backbone of serverless computing in AWS. It allows you to run code in response to triggers such as HTTP requests, database events, or changes in data streams. With Lambda, there’s no need to manage servers; AWS automatically handles scaling, making it ideal for lightweight, event-driven workloads.
@@ -722,11 +725,6 @@ AWS Lambda is the backbone of serverless computing in AWS. It allows you to run 
 A fully managed NoSQL database, Amazon DynamoDB is designed for high availability, low latency, and automatic scaling. It supports both key-value and document data models, making it a go-to choice for serverless architectures. DynamoDB works exceptionally well for real-time applications like gaming leaderboards, IoT systems, and e-commerce platforms.
 
 ![dynamodb](https://github.com/user-attachments/assets/363486f5-cd0a-4b62-8629-160f16c97d0d)
-
-## REST API with API Gateway
-A REST API is an architectural style that allows applications to interact over HTTP using standard methods like GET, POST, and DELETE. AWS API Gateway makes creating REST APIs simple, acting as a bridge between clients and backends such as Lambda functions or DynamoDB tables.
-
-![API Gateway](https://github.com/user-attachments/assets/34db84b9-2c02-40c2-a648-d7f352de21c6)
 
 ## IAM (Identity and Access Management)
 AWS IAM secures access to resources in your AWS environment. It lets you create users, roles, and policies to control who can access what. For serverless architectures, IAM ensures that services like API Gateway and Lambda interact securely with DynamoDB or other resources, following the principle of least privilege.
