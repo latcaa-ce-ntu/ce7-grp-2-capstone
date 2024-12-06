@@ -1080,29 +1080,31 @@ project-root/
 ├── provider.tf                       # AWS provider configuration
 ├── terraform.tfvars                  # Contains values for the variables declared in variables.tf
 ├── modules/                          # Directory to hold all reusable Terraform modules
-│   ├── alb/                          # ALB module
-│   │   ├── alb.tf                    # ALB resources
-│   │   ├── variables.tf              # ALB module variables
-│   │   └── outputs.tf                # ALB module outputs (e.g., ALB DNS name)
-│   ├── ecr/                          # ECR module
-│   │   ├── ecr.tf                    # ECR repository resources
-│   │   ├── variables.tf              # ECR module variables
-│   │   └── outputs.tf                # ECR module outputs
-│   ├── ecs/                          # ECS module
-│   │   ├── ecs.tf                    # ECS cluster, task definitions, service
-│   │   ├── variables.tf              # ECS module variables
-│   │   └── outputs.tf                # ECS module outputs (e.g., ECS cluster ARN)
+│   │
+│   ├── alb/                          # EKS module
+│   │   ├── eks.tf                    # EKS resources
+│   │   ├── iam.tf                    # IAM (Identity and Access Management) for EKS cluster
+│   │   ├── logging.tf                # Loadbalancer logging into S3
+│   │   ├── outputs.tf                # EKS module outputs
+│   │   ├── secrets.tf                # GHCR Secrets Management for private registry (Not in use)
+│   │   ├── security.tf               # Network Security Configuration for EKS and Load Balancer
+│   │   ├── serviceacc.tf             # Kubernetes Service Account and IAM Integration
+│   │   ├── variables.tf              # EKS module variables
+│   │   └── versions.tf               # EKS module versioning
+│   │
 │   └── vpc/                          # VPC module
-│       ├── vpc.tf                    # VPC, subnets, and related resources
+│       ├── vpc.tf                    # VPC, IGW, NAT GW, and Elastic IPs
+│       ├── network.tf                # Subnets, Route Tables, and Route Tables Association.
 │       ├── variables.tf              # VPC module variables
 │       └── outputs.tf                # VPC module outputs (e.g., VPC ID, subnet IDs)
-├── iam.tf                            # IAM roles and policies for ECS task execution and services
-├── network.tf                        # Security groups and networking configurations
+│
+├── iam.tf                            # IAM role/policy for Lambda to access DynamoDB and CloudWatch.
+├── network.tf                        # Security groups and networking configurations.
 ├── container-definitions.json        # ECS task container definitions file (if needed)
 ├── ce7-grp-2-jokes-lambda.zip        # A ZIP file containing the Lambda function code. 
 ├── dynamodb.tf                       # A file that defines resources related to DynamoDB.
 ├── lambda.tf                         # A file that defines the resources for the AWS Lambda function.
-├── webapi_gtw.tf                     # A file that defines the resources for the AWS API Gateway.  
+├── webapi_gtw.tf                     # Sets up an API Gateway with Lambda integration for CRUD operations on a jokes service.  
 └── README.md                         # Documentation for the setup and usage
 ```
 
