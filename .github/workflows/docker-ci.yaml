@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "jokes-webapp-v2/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
+      - "jokes-webapp-v2/**" # Replace path and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -184,7 +184,7 @@ jobs:
       #     API_URL: ${{ secrets.API_URL }}
       #   run: |
       #     echo "API_URL=$API_URL" >> .env
-        
+
       # - name: Verify .env content
       #   run: |
       #     # Display the contents of the .env file for debugging
@@ -199,10 +199,12 @@ jobs:
 
           # Check if the build was successful
           if [ $? -eq 0 ]; then
-            echo "Docker image built successfully with tag ${{ env.IMAGE_NAME }}:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
+            echo "### Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker image built successfully with tag ${{ env.IMAGE_NAME }}:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
           else
-            echo "Docker build failed with the following errors:" >> $GITHUB_STEP_SUMMARY
-            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
+            echo "### Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker build failed with the following errors:" >> $GITHUB_STEP_SUMMARY
+            echo "- $output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
           fi
 
   Grype-Container-Scan:
@@ -245,7 +247,7 @@ jobs:
             echo "- High severity issues found." >> $GITHUB_STEP_SUMMARY
           fi
 
-  Docker-Run:
+  Docker-Run-and-ZAP:
     needs: Grype-Container-Scan
     runs-on: ubuntu-latest
 
@@ -264,32 +266,38 @@ jobs:
       - name: Docker Run
         run: |
           # Run the container
-          docker run --rm --name hw_container -d -p 8080:5000 ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker run --rm --name test_container -d -p 8080:5000 ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
           # Wait for the container to start up
           sleep 5
 
           # Check if the container is running
-          container_status=$(docker inspect -f '{{.State.Running}}' hw_container)
-          echo "Container running status: $container_status" >> $GITHUB_STEP_SUMMARY
+          container_status=$(docker inspect -f '{{.State.Running}}' test_container)
 
           if [ "$container_status" = "true" ]; then
-            echo "Docker container is running successfully." >> $GITHUB_STEP_SUMMARY
+            echo "### Docker Run" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker container is running successfully." >> $GITHUB_STEP_SUMMARY
           else
-            echo "Docker container is not running." >> $GITHUB_STEP_SUMMARY
+            echo "### Docker Run" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker container is not running!" >> $GITHUB_STEP_SUMMARY
             exit 1  # Exit with a non-zero code to indicate failure
           fi
 
       - name: ZAP Scan
+        id: zap-scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
           target: "http://localhost:8080" # Adjust this URL to match your application's endpoint
           token: ${{ secrets.GITHUB_TOKEN }}
-          # format: "html" # Specify the output format (e.g., html, xml)
-          # output: "zap_report.html" # Name of the output report file
 
-      # - name: Upload ZAP Report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: zap-report
-      #     path: zap_report.html
+      - name: Write Success Summary
+        if: success() # This step runs only if the previous step succeeded
+        run: |
+          echo "### ZAP Scan" >> $GITHUB_STEP_SUMMARY
+          echo "- ZAP Scan Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+
+      - name: Write Failure Summary
+        if: failure() # This step runs only if the previous step failed
+        run: |
+          echo "### ZAP Scan" >> $GITHUB_STEP_SUMMARY
+          echo "- ZAP Scan Failed!" >> $GITHUB_STEP_SUMMARY
