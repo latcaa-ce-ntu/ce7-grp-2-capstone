@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
     paths:
-      - "jokes-webapp-v2/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
+      - "jokes-webapp-v2/**" # Replace path and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   IMAGE_NAME: ${{ vars.JOKE_IMAGE_NAME }}
@@ -184,7 +184,7 @@ jobs:
       #     API_URL: ${{ secrets.API_URL }}
       #   run: |
       #     echo "API_URL=$API_URL" >> .env
-        
+
       # - name: Verify .env content
       #   run: |
       #     # Display the contents of the .env file for debugging

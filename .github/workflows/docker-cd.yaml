@@ -9,7 +9,7 @@ on:
     tags:
       - "v*"
     paths:
-      - "jokes-webapp-v2/**" # Replace 'files' and update APP_FOLDER variable in github repo variables to change app folder path
+      - "jokes-webapp-v2/**" # Replace path and update APP_FOLDER variable in github repo variables to change app folder path
 
 env:
   REGISTRY: ${{ vars.REGISTRY }}
@@ -343,7 +343,7 @@ jobs:
           if [ "$CNAME_VALUE" = "$EXTERNAL_IP" ]; then
             echo "Route53 cname $CNAME created successfully." >> $GITHUB_STEP_SUMMARY
           else
-            echo "Route53 cname creation failed." >> $GITHUB_STEP_SUMMARY
+            echo "Route53 cname $CNAME creation failed." >> $GITHUB_STEP_SUMMARY
           fi
 
           # Wait for DNS propagation
