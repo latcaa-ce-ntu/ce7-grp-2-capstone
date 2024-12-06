@@ -1,11 +1,12 @@
-# ecs_cluster_name = "azmi1-ecs-cluster-uat"
+# name_prefix = "ce7-grp-2-uat"
 
-# ecs_task_def_family = "azmi1-task-definition-uat"
+# env = "uat"
 
-# ecs_service_name = "azmi1-nginx-service-uat"
+# region = "us-east-1"
 
-# alb_name = "azmi1-nginx-alb-uat"
+# vpc_cidr = "10.1.0.0/16"  # Different CIDR for UAT environment
 
-# alb_tg_name = "azmi1-nginx-tg-uat"
-
-# container_name = "azmi1-nginx-container-uat"
+# User Acceptance Testing environment
+# - Uses 10.1.0.0/16 VPC CIDR
+# - Resources will be prefixed with ce7-grp-2-uat
+# - For testing with production-like settings
