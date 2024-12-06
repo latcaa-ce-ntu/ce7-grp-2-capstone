@@ -385,7 +385,8 @@ In summary, separating these workflows enhances clarity, security, modularity, a
 ### Terraform CI
 
 Terraform files are stored in `terraform/` directory in the repo.
-Adopting a shift-left security approach, we implement the following checks for our Terraform CI workflow:
+Adopting a shift-left security approach, we implement the following checks for our Terraform CI workflow.
+We also have Sonarqube integrated into our repo so it runs code scans on the repo as well as every pull request.
 
 1. Terraform checks
     - Terraform format
@@ -609,31 +610,324 @@ Our terraform CD workflow only consists of one step since all the checks have be
 
 ### Docker CI
 
-Docker and application files are stored in their own directory in the repo. `jokes-webapp-v#` in thie instance.
+Docker and application files are stored in their own directory in the repo. `jokes-webapp-v#` in this instance.
 We have tried to design the workflow to be app agnostic. Currently, these workflows will work with both js and python projects.
-Adopting a shift-left security approach, we implement the following checks for our Docker CI workflow:
+Adopting a shift-left security approach, we implement the following checks for our Docker CI workflow.
+We also have Sonarqube integrated into our repo so it runs code scans on the repo as well as every pull request.
 
-#### Check project type
-  - Checks if the project is a python or js node project.
-#### NPM Audit (js)
-  - Analyzes the dependencies listed in your project's package.json file and checks them against a database of known vulnerabilities, including those from the GitHub Advisory Database, which encompasses vulnerabilities from various ecosystems.
-#### NPM Test (js)
-  - Command that runs the test script defined in the "test" property of a project's package.json file, executing automated unit tests for the codebase.
-#### Python Safety Scan (py)
-  - Scans for vulnerabilities in third-party libraries and dependencies specified in requirements files.
-#### Python Bandit Scan (py)
-  - Only scans the application code itself, detecting issues directly within the codebase.
-#### Sonarqube scan
-  - Analyzes source code to detect bugs, vulnerabilities, and code smells, providing insights into code quality and enabling teams to maintain clean and secure codebases.
-#### Docker Build
-  - Builds the Docker container locally on the runner to confirm that it can be built without errors.
-#### Grype Container Scan
-  - An open-source vulnerability scanner that identifies known security vulnerabilities in container images and filesystems.
-#### Docker run test
-  - Runs the Docker container to make sure it can launch successfully.
-#### ZAP Scan
-  - OWASP ZAP (Zed Attack Proxy) is an open-source web application DAST security scanner that identifies vulnerabilities and security issues by simulating attacks on web applications.
+1. Check project type
+   - Checks if the project is a python or js node project.
+<details>
+  
+```yml
+  Check-Files:
+    runs-on: ubuntu-latest
+    outputs:
+      has_js_files: ${{ steps.checkjs.outputs.has_js_files }}
+      has_python_files: ${{ steps.checkpy.outputs.has_python_files }}
 
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for .js files
+        id: checkjs
+        run: |
+          if ls *.js 1> /dev/null 2>&1; then
+            echo "has_js_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_js_files=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for .py files
+        id: checkpy
+        run: |
+          if ls *.py 1> /dev/null 2>&1; then
+            echo "has_python_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_python_files=false" >> $GITHUB_OUTPUT
+          fi
+```
+
+</details>
+
+2. Code Checks 
+   - NPM Audit (js): Analyzes the dependencies listed in your project's package.json file and checks them against a database of known vulnerabilities, including those from the GitHub Advisory Database, which encompasses vulnerabilities from various ecosystems.
+   - NPM Test (js): Command that runs the test script defined in the "test" property of a project's package.json file, executing automated unit tests for the codebase.
+   - Python Safety Scan (py): Scans for vulnerabilities in third-party libraries and dependencies specified in requirements files.
+   - Python Bandit Scan (py): Only scans the application code itself, detecting issues directly within the codebase.
+<details>
+  
+```yml
+Code-Checks:
+    runs-on: ubuntu-latest
+    needs: Check-Files
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: needs.Check-Files.outputs.has_js_files == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+
+      - name: Run installation of dependencies commands
+        if: needs.Check-Files.outputs.has_js_files == 'true'
+        run: npm install
+
+      - name: Run a security audit
+        if: needs.Check-Files.outputs.has_js_files == 'true'
+        id: npm-audit
+        run: |
+          # Run npm audit and capture output
+          output=$(npm audit --audit-level=high --json)
+
+          # Check if there are vulnerabilities found
+          if [ $? -eq 0 ]; then
+            echo "NPM audit completed successfully with no high vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "NPM audit found the following high vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" | jq -r '.advisories | to_entries[] | "Package: \(.value.module_name), Severity: \(.value.severity), Title: \(.value.title), URL: \(.value.url)"' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Install Mocha, Chai and Supertest
+        if: needs.Check-Files.outputs.has_js_files == 'true'
+        # Mocha: A test framework for running tests.
+        # Chai: An assertion library for Node.js.
+        # Supertest: A library for testing HTTP servers.
+        run: npm install --save-dev mocha chai supertest
+
+      - name: Run unit testing command
+        if: needs.Check-Files.outputs.has_js_files == 'true'
+        id: npm-test
+        run: |
+          # Run npm test and capture output
+          output=$(npm test -- --reporter=json)
+
+          # Check if tests passed or failed
+          if [ $? -eq 0 ]; then
+            echo "All unit tests passed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Some unit tests failed. See details below:" >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY  # Append test output to summary
+          fi
+
+      - name: Run Safety CLI to check for vulnerabilities
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        id: safety
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          args: --detailed-output --ignore 72731 --ignore 70813 --ignore 70624 # To always see detailed output from this action
+
+      - name: Summary of Python Safety Scan
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        run: |
+          if [ "${{ steps.safety.outcome }}" == "success" ]; then
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Safety Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Safety scan failed." >> $GITHUB_STEP_SUMMARY
+            echo "- Vulnerabilities found:" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.safety.outputs.vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Set Up Python
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Bandit
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        run: pip install bandit[sarif]
+
+      - name: Run Bandit Scan
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        id: bandit
+        run: bandit -r . --severity-level high --confidence-level high -f sarif -o bandit-report.sarif
+
+      - name: Upload Bandit scan SARIF report
+        if: needs.Check-Files.outputs.has_python_files == 'true' && failure()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit-report.sarif
+
+      - name: Summary of Bandit Scan
+        if: needs.Check-Files.outputs.has_python_files == 'true'
+        run: |
+          if [ "${{ steps.bandit.outcome }}" == "success" ]; then
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Bandit scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Bandit Scan" >> $GITHUB_STEP_SUMMARY
+            echo "High severity issues found:" >> $GITHUB_STEP_SUMMARY
+          fi
+```
+
+</details>
+
+3. Docker Build
+   - Builds the Docker container locally on the runner to confirm that it can be built without errors.
+<details>
+  
+```yml
+  Docker-Build:
+    needs: Code-Checks
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        id: docker-build
+        run: |
+          # Run docker build and capture output
+          output=$(docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} . 2>&1)
+
+          # Check if the build was successful
+          if [ $? -eq 0 ]; then
+            echo "### Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker image built successfully with tag ${{ env.IMAGE_NAME }}:${{ github.sha }}." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker build failed with the following errors:" >> $GITHUB_STEP_SUMMARY
+            echo "- $output" >> $GITHUB_STEP_SUMMARY  # Append build output to summary
+          fi
+```
+
+</details>
+
+4. Grype Container Scan
+   - An open-source vulnerability scanner that identifies known security vulnerabilities in container images and filesystems.
+<details>
+  
+```yml
+  Grype-Container-Scan:
+    needs: Docker-Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Build
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Run Grype Container Scan
+        id: grype
+        uses: anchore/scan-action@v5
+        with:
+          image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          fail-build: true
+          severity-cutoff: high
+
+      - name: upload Anchore scan SARIF report
+        if: ${{ failure() }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.grype.outputs.sarif }}
+
+      - name: Summarize Grype Scan Results
+        run: |
+          if [ "${{ steps.grype.outcome }}" == "success" ]; then
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- Grype scan completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Grype Scan" >> $GITHUB_STEP_SUMMARY
+            echo "- High severity issues found." >> $GITHUB_STEP_SUMMARY
+          fi
+```
+
+</details>
+
+5. Docker run test and ZAP scan
+   - Runs the Docker container to make sure it can launch successfully.
+   - OWASP ZAP (Zed Attack Proxy) is an open-source web application DAST security scanner that identifies vulnerabilities and security issues by simulating attacks on web applications.
+<details>
+  
+```yml
+  Docker-Run-and-ZAP:
+    needs: Grype-Container-Scan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ vars.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Build
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Docker Run
+        run: |
+          # Run the container
+          docker run --rm --name test_container -d -p 8080:5000 ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+          # Wait for the container to start up
+          sleep 5
+
+          # Check if the container is running
+          container_status=$(docker inspect -f '{{.State.Running}}' test_container)
+
+          if [ "$container_status" = "true" ]; then
+            echo "### Docker Run" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker container is running successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Docker Run" >> $GITHUB_STEP_SUMMARY
+            echo "- Docker container is not running!" >> $GITHUB_STEP_SUMMARY
+            exit 1  # Exit with a non-zero code to indicate failure
+          fi
+
+      - name: ZAP Scan
+        id: zap-scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: "http://localhost:8080" # Adjust this URL to match your application's endpoint
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write Success Summary
+        if: success() # This step runs only if the previous step succeeded
+        run: |
+          echo "### ZAP Scan" >> $GITHUB_STEP_SUMMARY
+          echo "- ZAP Scan Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+
+      - name: Write Failure Summary
+        if: failure() # This step runs only if the previous step failed
+        run: |
+          echo "### ZAP Scan" >> $GITHUB_STEP_SUMMARY
+          echo "- ZAP Scan Failed!" >> $GITHUB_STEP_SUMMARY
+```
+
+</details>
 
 ### Docker CD
 
