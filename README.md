@@ -791,7 +791,7 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 
 #### 2. Backend (Serverless):
    
-  The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with GitHub Workflows for continuous integration and deployment:
+  The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with **GitHub Workflows** for continuous integration and deployment:
   - **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
   - **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
   - **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
@@ -851,7 +851,7 @@ AWS IAM secures access to resources in your AWS environment. It lets you create 
 ![IamPolicy](https://github.com/user-attachments/assets/a65c7531-68dd-47fe-915e-1b19a722ddad)
 
 ## Project Management and Future Areas for Improvement
-A simple Jira Kanban Board was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
+A simple **Jira Kanban Board** was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
 
 https://tanlye.atlassian.net/jira/software/projects/CE7/boards/1?atlOrigin=eyJpIjoiOWY0ZmFhMmE5OTFkNGEyZGI3OTI2YzQyMDNkMGEwYmEiLCJwIjoiaiJ9
 
