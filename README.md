@@ -204,7 +204,7 @@ By default, 2 worker nodes are running at all times to ensure steady performance
 ```
 </details>
 
-#### Security - Logging
+#### Security - Logging & S3
 Logs from the Application Load Balancer were activated and stored in an S3 bucket. Some security measures implemented for logs include:
 1. Blocking Public Access to s3 bucket
 2. Server-Side Encryption (SSE) - All objects stored in S3 bucket are encrypted using AES-256 encryption by default
@@ -280,6 +280,13 @@ resource "aws_s3_bucket_policy" "lb_logs" {
 Distinct IAM roles were created for EKS cluster and worker nodes on a needs-only basis, ensuring clear boundaries for permissions and minimizing potential risks.
 1. EKS cluster role
 - Allows EKS to manage AWS resources
+
+2. Node role
+- Allows EC2 Instances/EKS worker nodes to access AWS services; namely to
+  - interact with the EKS cluster and manage workloads
+  - access network functionalities
+  - pull container images from ECR
+  
 <details>
   
 ```
@@ -307,18 +314,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_cluster_role.name
 }
-```
-</details>
 
-2. Node role
-- Allows EC2 Instances/EKS worker nodes to access AWS services; namely to
-  - interact with the EKS cluster and manage workloads
-  - access network functionalities
-  - pull container images from ECR
-  
-<details>
-  
-```
 # Create IAM role for EKS worker nodes
 resource "aws_iam_role" "eks_node_role" {
   name = "${var.name_prefix}-eks-node-role"
@@ -359,15 +355,188 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry" {
 ```
 </details>
 
+#### Security - Environment Separation and Role segregation
+Upon creation of EKS cluster, the clusters are further organized into 3 separate namespaces - dev, uat and prod - to achieve separate environments for our deployments/services/apps.
+
+<details> 
+
+```
+# Create namespaces to organize our applications
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    name = "dev"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
+
+resource "kubernetes_namespace" "uat" {
+  metadata {
+    name = "uat"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
+
+resource "kubernetes_namespace" "prod" {
+  metadata {
+    name = "prod"
+  }
+  depends_on = [time_sleep.wait_for_kubernetes]
+}
+```
+</details>
+
+
+Separate IAM roles - app_role_dev, app_role_uat, app_role_prod were also created and can only be assumed by specific service accounts ce7-grp2-sa-app-dev, ce7-grp2-sa-app-uat and ce7-grp2-sa-app-prod respectively through OpenID Connect (OIDC) authentication. If needed, each IAM role can be further configured to restrict access to AWS services depending on each role's needs e.g. 
+
+<details> 
+
+```
+# Create IAM roles that can be assumed by Kubernetes service accounts
+resource "aws_iam_role" "app_role_dev" {
+  name = "${var.name_prefix}-app-role-dev"
+
+  # Trust policy allowing Kubernetes service accounts to assume this role
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        # Use OIDC provider for secure authentication
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}"
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          # Ensure only our specific service account can assume this role
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-dev"
+        }
+      }
+    }]
+  })
+}
+
+# Create IAM roles that can be assumed by Kubernetes service accounts
+resource "aws_iam_role" "app_role_uat" {
+  name = "${var.name_prefix}-app-role-uat"
+
+  # Trust policy allowing Kubernetes service accounts to assume this role
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        # Use OIDC provider for secure authentication
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}"
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          # Ensure only our specific service account can assume this role
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-uat"
+        }
+      }
+    }]
+  })
+}
+
+# Create IAM role that can be assumed by Kubernetes service accounts
+resource "aws_iam_role" "app_role_prod" {
+  name = "${var.name_prefix}-app-role-prod"
+
+  # Trust policy allowing Kubernetes service accounts to assume this role
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        # Use OIDC provider for secure authentication
+        Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}"
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          # Ensure only our specific service account can assume this role
+          "${replace(aws_eks_cluster.ce7_grp_2_eks.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:applications:${var.name_prefix}-sa-app-prod"
+        }
+      }
+    }]
+  })
+}
+
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "dev_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-sa-app-dev"
+    namespace = kubernetes_namespace.dev.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_dev.arn
+    }
+  }
+
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
+
+  depends_on = [
+    kubernetes_namespace.dev,
+    aws_iam_role.app_role_dev
+  ]
+}
+
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "uat_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-sa-app-uat"
+    namespace = kubernetes_namespace.uat.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_uat.arn
+    }
+  }
+
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
+
+  depends_on = [
+    kubernetes_namespace.uat,
+    aws_iam_role.app_role_uat
+  ]
+}
+
+# Create Kubernetes service account for our application
+resource "kubernetes_service_account" "prod_service_account" {
+  metadata {
+    name      = "${var.name_prefix}-sa-app-prod"
+    namespace = kubernetes_namespace.prod.metadata[0].name
+    annotations = {
+      # Link to IAM role for AWS permissions
+      "eks.amazonaws.com/role-arn" = aws_iam_role.app_role_prod.arn
+    }
+  }
+
+  # Add GitHub container registry credentials
+  # image_pull_secret {
+  #   name = kubernetes_secret.ghcr_auth.metadata[0].name
+  # }
+
+  depends_on = [
+    kubernetes_namespace.prod,
+    aws_iam_role.app_role_prod
+  ]
+}
+```
+</details>
+
+#### Security - EKS & Load Balancer
+
 
 
 Nodegroups:
 
-Namespaces: We create three namespaces ```(dev|uat|prod)``` to achieve separate environments for our deployments/services/apps.
-
-IAM:
-    - Roles:
-    - Policies:
 
 ## CI/CD Pipelines
 
