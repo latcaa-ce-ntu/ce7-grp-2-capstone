@@ -125,7 +125,7 @@ In summary, GHCR provides significant advantages in cost, integration, ease of u
 
 ### Secrets Management
 
-We are using Github Actions Secrets for all of our secrets in this repo.
+We are using Github Actions Secrets for all of our secrets in this repo for ease of integration with Github Actions workflow. 
 
 ### Environment handling
 
@@ -134,7 +134,22 @@ Instead we re-use the same vpc and eks cluster. Then use kubernetes namespaces (
 Understandably, in a large enough organization, it will be prudent to separate the cloud infra into different environments.
 However, for our small capstone project, we have opted to save on costs of running multiple eks clusters.
 
-### Kuberneter Cluster details
+### Kuberneter Cluster - Key Setup Features
+#### Auto-scaling & self-healing
+By default, 2 worker nodes are running at all times. However this can be scaled up or down to 1-3 nodes depending on load. 
+
+<details>
+  
+```
+  # Configure auto-scaling for nodes
+  scaling_config {
+    desired_size = 2 # Normal running nodes
+    max_size     = 3 # Maximum during high load
+    min_size     = 1 # Minimum to maintain
+  }
+```
+
+</details>
 
 Nodegroups:
 
