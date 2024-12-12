@@ -1,0 +1,73 @@
+name: Monitoring CD Workflow
+run-name: Running Monitoring CD Workflow by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+    paths:
+      - "kubernetes/monitoring/**"
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  EKS_CLUSTER: ${{ vars.EKS_CLUSTER }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Deploy-Monitoring:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: kubernetes/monitoring
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+      - name: Set up kubectl
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Create Monitoring Namespace
+        run: |
+          kubectl apply -f namespace/
+          
+      - name: Deploy Prometheus
+        run: |
+          kubectl apply -f prometheus/
+          
+      - name: Deploy Grafana
+        run: |
+          kubectl apply -f grafana/
+          
+      - name: Verify Deployments
+        run: |
+          echo "Checking deployment status..." >> $GITHUB_STEP_SUMMARY
+          
+          # Wait for deployments
+          kubectl -n monitoring wait --for=condition=available --timeout=300s deployment/prometheus
+          kubectl -n monitoring wait --for=condition=available --timeout=300s deployment/grafana
+          
+          # Get deployment status
+          echo "## Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          kubectl get deployments -n monitoring >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          # Get service status
+          echo "## Service Status" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          kubectl get services -n monitoring >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
