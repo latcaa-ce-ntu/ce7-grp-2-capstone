@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.0.0
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "admin123" # Change this!
+        - name: GF_SECURITY_ADMIN_USER
+          value: "admin"
+      volumes:
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources

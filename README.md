@@ -1602,8 +1602,9 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 ![mgmtpage](https://github.com/user-attachments/assets/c0d5ce22-fb80-4512-95fb-d6539bee8b0e)
 
 ### Key Features
+
 #### 1. Random Joke Generator
-   
+
 - Click a button to fetch a random joke from a dynamic pool of jokes.
 - Each joke is retrieved through serverless APIs backed by AWS tools.
 - Joke Management Interface

@@ -45,7 +45,7 @@ provider "kubernetes" {
   # }
 }
 
-# # ----------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
 
 # Overview- This configuration sets up AWS and Kubernetes providers with specific version constraints and tag management.
 
