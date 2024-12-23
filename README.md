@@ -16,7 +16,7 @@
 5. Use AWS EKS as the container orchestration platform
 
 ## Architecture Diagram
-![ce7-grp-2-capstone-architecture (1) drawio](https://github.com/user-attachments/assets/637c0047-c713-469d-ae8d-68bf8e8aa6b0)
+![ce7-grp-2-capstone-architecture (1) drawio](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone1.png)
 
 
 
