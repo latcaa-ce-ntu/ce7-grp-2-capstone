@@ -1,14 +1,17 @@
 ![Alt Text](https://github.com/lann87/cloud_infra_eng_ntu_coursework_alanp/blob/main/.misc/ntu_logo.png)  
 
 # CE7 Group 2 Capstone Project  
-## Team Members :  
-1. **Alan Peh**
-2. **Andy Liew**
-3. **Azmi Maniku**
-4. **Lovell Tan**
-5. **Wong Teck Choy**
-                
+
+**Team Members:**  
+
+1. **Alan Peh**  
+2. **Andy Liew**  
+3. **Azmi Maniku**  
+4. **Lovell Tan**  
+5. **Wong Teck Choy**  
+
 ## Project Objectives
+
 1. Create a simple Web App that allows users to read new jokes with each click of a button. 
 2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB with Joke generation using AWS Lambda function.
 3. Build AWS infrastructure using Terraform
@@ -16,13 +19,13 @@
 5. Use AWS EKS as the container orchestration platform
 
 ## Architecture Diagram
+
 ![ce7-grp-2-capstone-architecture (1) drawio](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone1.png)
-
-
 
 ## Dev/UAT/Prod Github Branch strategy  
 
-![git branch2](https://github.com/user-attachments/assets/a1adccf3-c3bc-4e1e-8ed6-d7c7e93d6d1c)
+![git branch2](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone2.jpg)
+
 <sub>Image from Valaxy Technologies.</sub>
 
 ### Pros and Cons of Dev/UAT/Prod Branch Strategy  
@@ -63,18 +66,20 @@ We are also implementing some continuous deployment by automatically merging dev
 Moving from uat branch to prod branch will be a manual pull request.
 
 ## Branch Security
+
 The following branch security was implemented to ensure the integrity of the repository:
+
 1. Require pull request + Minimum 1 review approval before merging
 2. No force pushes allowed
 3. No force deletions allowed
-![image](https://github.com/user-attachments/assets/8d05dfc7-3d3f-47c6-82d5-92c0241cc1cd)
+![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone3.png)
 
 ## OpenID Connect (OIDC)  
 
 
 ### Advantages
 **GitHub OpenID Connect (OIDC)** allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
-![image](https://github.com/user-attachments/assets/aa51e9c6-ca29-4458-8510-e9a1595fa9df)
+![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone4.png)
 
 GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:  
 
@@ -91,7 +96,7 @@ GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:
 6. **Better Compliance with Security Standards**  
     - Adopting OIDC helps organizations align with security best practices, minimizing the use of long-lived credentials.  
 
-### Conclusion  
+### Conclusion
 
 OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow. 
 Potential areas for improvement: Restrict Access to different resources created based on specific user roles (IAM) that authenticate using OIDC.
@@ -99,7 +104,7 @@ Potential areas for improvement: Restrict Access to different resources created 
 ### Implementation
 
 Create a IAM Role in AWS with required aws permissions and a trust relationship for github.
-<img width="1244" alt="image" src="https://github.com/user-attachments/assets/6c7c7bcb-40a3-439b-906b-37ebb7c250b8">
+![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone5.png)
 
 > [!CAUTION]
 > We have used Administrator Access for this role for ease of use in this capstone project.
@@ -131,15 +136,17 @@ Trust Relationship:
     ]
 }
 ```
+
 Create a github actions secret `ROLE_TO_ASSUME` with the arn of the IAM role.
 
-Github Actions permissions:
-                  
+**Github Actions permissions:**  
+
 ```yml
 permissions:
   id-token: write # This is required for requesting the JWT
 
 ```
+
 configure-aws-credentials action:
 
 ```yml
@@ -155,10 +162,11 @@ configure-aws-credentials action:
 
 ## Containerization & Container Management
 
-### Container Orchestration Solution 
-Initially, the team considered deploying the containerized web app to AWS Elastic Constainer Service (ECS) given the relatively small scale of the project and lack of experience with EKS. 
+### Container Orchestration Solution
 
-However, understanding that AWS Elastic Kubernetes Service (EKS) tends to be the industry standard and offers greater customization flexibility, EKS was eventually selected as the Container Orchestration Solution for the project. 
+Initially, the team considered deploying the containerized web app to AWS Elastic Constainer Service (ECS) given the relatively small scale of the project and lack of experience with EKS.  
+
+However, understanding that AWS Elastic Kubernetes Service (EKS) tends to be the industry standard and offers greater customization flexibility, EKS was eventually selected as the Container Orchestration Solution for the project.  
 
 ### Container Registry selection
 
@@ -182,10 +190,9 @@ Following are some advantages of using ghcr:
 
 In summary, GHCR provides significant advantages in cost, integration, ease of use, and flexibility, making it a strong choice for developers leveraging GitHub.
 
-
 ### Secrets Management
 
-We are using Github Actions Secrets for all of our secrets in this repo for ease of integration with Github Actions workflow. Moreover, third-party secret management tools are unnecessary as the number of secrets need to be stored is small. 
+We are using Github Actions Secrets for all of our secrets in this repo for ease of integration with Github Actions workflow. Moreover, third-party secret management tools are unnecessary as the number of secrets need to be stored is small.  
 
 ### Environment handling
 
@@ -195,12 +202,14 @@ Understandably, in a large enough organization, it will be prudent to separate t
 However, for our small capstone project, we have opted to save on costs of running multiple eks clusters.
 
 ### Kubernetes Cluster - Key Setup Features
+
 #### Auto-scaling
-By default, 2 worker nodes are running at all times to ensure steady performance. However this can be auto-scaled up or down to 1-3 nodes depending on workload. 
+
+By default, 2 worker nodes are running at all times to ensure steady performance. However this can be auto-scaled up or down to 1-3 nodes depending on workload.  
 
 <details>
   
-```
+```sh
   # Configure auto-scaling for nodes
   scaling_config {
     desired_size = 2 # Normal running nodes
@@ -208,17 +217,21 @@ By default, 2 worker nodes are running at all times to ensure steady performance
     min_size     = 1 # Minimum to maintain
   }
 ```
+
 </details>
 
 #### Security - Logging & S3
+
 Logs from the Application Load Balancer were activated and stored in an S3 bucket. Some security measures implemented for logs include:
+
 1. Blocking Public Access to s3 bucket
 2. Server-Side Encryption (SSE) - All objects stored in S3 bucket are encrypted using AES-256 encryption by default
 3. Enabling Versioning on S3 bucket - allows older versions of logs to be accessed easily for auditing/monitoring/troubleshooting
-4. S3 bucket policy that allows only the specific ALB service account from us-east-1 region to write and upload logs into the bucket.  
+4. S3 bucket policy that allows only the specific ALB service account from us-east-1 region to write and upload logs into the bucket.
+
 <details>
   
-```
+```sh
 # Block all public access to the bucket for security 
 resource "aws_s3_bucket_public_access_block" "lb_logs" {
   bucket = aws_s3_bucket.lb_logs.id
@@ -280,22 +293,27 @@ resource "aws_s3_bucket_policy" "lb_logs" {
   })
 }
 ```
+
 </details>
 
 #### Security - IAM
+
 Distinct IAM roles were created for EKS cluster and worker nodes on a needs-only basis, ensuring clear boundaries for permissions and minimizing potential risks.
-1. EKS cluster role
+
+1. EKS cluster role  
+
 - Allows EKS to manage AWS resources
 
-2. Node role
+2. Node role  
+
 - Allows EC2 Instances/EKS worker nodes to access AWS services; namely to
-  - interact with the EKS cluster and manage workloads
-  - access network functionalities
-  - pull container images from ECR
+- interact with the EKS cluster and manage workloads
+- access network functionalities
+- pull container images from ECR
   
 <details>
   
-```
+```sh
 # Create IAM role for EKS cluster management
 resource "aws_iam_role" "eks_cluster_role" {
   name = "${var.name_prefix}-eks-cluster-role"
@@ -359,14 +377,16 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry" {
   role       = aws_iam_role.eks_node_role.name
 }
 ```
+
 </details>
 
 #### Security - Environment Separation and Role segregation
+
 Upon creation of EKS cluster, the clusters are further organized into 3 separate namespaces - **dev**, **uat** and **prod** - to achieve separate environments for our deployments/services/apps.
 
 <details> 
 
-```
+```sh
 # Create namespaces to organize our applications
 resource "kubernetes_namespace" "dev" {
   metadata {
@@ -397,7 +417,7 @@ If needed, each IAM role can be further configured to restrict access to AWS ser
 
 <details> 
 
-```
+```sh
 # Create IAM roles that can be assumed by Kubernetes service accounts
 resource "aws_iam_role" "app_role_dev" {
   name = "${var.name_prefix}-app-role-dev"
@@ -545,16 +565,14 @@ Internet -> (port 80) Load Balancer  -> (NodePorts 30000 to 32767) EKS Cluster N
 
 > [!CAUTION]
 > Our aws_security_group allows **all** inbound traffic and outbound traffic between the internet and the EKS nodes. This was done for ease of the project and to ensure smooth demonstration. 
-> However, as per Terrascan warnings - best practice would be to ensure all outbound traffic is monitored and restricted to specific ports or required external IPs, and all inbound traffic is restricted to trusted IPs.
-> 
-> <img src="https://github.com/user-attachments/assets/9d2d7b42-3eef-4a87-b2a8-29829865b29b" alt="Image description" width="400"><img src="https://github.com/user-attachments/assets/9d2d7b42-3eef-4a87-b2a8-29829865b29b" alt="Image description" width="400">
+> However, as per Terrascan warnings - best practice would be to ensure all outbound traffic is monitored and restricted to specific ports or required external IPs, and all inbound traffic is restricted to trusted IPs.  
 
-
-
+![Image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone5.jpg)
 
 ## CI/CD Pipelines
 
 ### Advantages of Separating Terraform and Docker CI/CD Workflows
+
 1. Clear Separation of Concerns: Distinct workflows allow teams to focus on infrastructure (Terraform) and application deployment (Docker) independently, clarifying roles and responsibilities.
 2. Improved Modularity: Modular Terraform configurations can be reused across projects without being tied to specific Docker setups, enhancing maintainability.
 3. Enhanced Security: Different access controls can be implemented for infrastructure and application workflows, improving security by limiting permissions based on team roles.
@@ -576,6 +594,7 @@ We also have Sonarqube integrated into our repo so it runs code scans on the rep
     - Terraform init
     - Terraform validate
     - TFLint
+
 <details>
   
 ```yml
@@ -660,8 +679,10 @@ We also have Sonarqube integrated into our repo so it runs code scans on the rep
 
 </details>
 
-2. Terrascan IAC Scan
+2. Terrascan IAC Scan  
+
 Snyk was the initial choice for IAC scan. However as the free version of Snyk limits the number of runs allowed, the team switched to use Terrascan.
+
 <details>
   
 ```yml
@@ -696,6 +717,7 @@ Snyk was the initial choice for IAC scan. However as the free version of Snyk li
 </details>
 
 3. Terraform plan
+
 <details>
   
 ```yml
@@ -752,6 +774,7 @@ Snyk was the initial choice for IAC scan. However as the free version of Snyk li
 Our terraform CD workflow only consists of one step since all the checks have been done in the CI workflow.
 
 1. Terraform Apply
+
 <details>
   
 ```yml
@@ -801,6 +824,7 @@ We also have Sonarqube integrated into our repo so it runs code scans on the rep
 
 1. Check project type
    - Checks if the project is a python or js node project.
+
 <details>
   
 ```yml
@@ -840,11 +864,12 @@ We also have Sonarqube integrated into our repo so it runs code scans on the rep
 
 </details>
 
-2. Code Checks 
+2. Code Checks  
    - NPM Audit (js): Analyzes the dependencies listed in your project's package.json file and checks them against a database of known vulnerabilities, including those from the GitHub Advisory Database, which encompasses vulnerabilities from various ecosystems.
    - NPM Test (js): Command that runs the test script defined in the "test" property of a project's package.json file, executing automated unit tests for the codebase.
    - Python Safety Scan (py): Scans for vulnerabilities in third-party libraries and dependencies specified in requirements files.
    - Python Bandit Scan (py): Only scans the application code itself, detecting issues directly within the codebase.
+
 <details>
   
 ```yml
@@ -966,6 +991,7 @@ Code-Checks:
 
 3. Docker Build
    - Builds the Docker container locally on the runner to confirm that it can be built without errors.
+
 <details>
   
 ```yml
@@ -1003,6 +1029,7 @@ Code-Checks:
 
 4. Grype Container Scan
    - An open-source vulnerability scanner that identifies known security vulnerabilities in container images and filesystems.
+
 <details>
   
 ```yml
@@ -1052,6 +1079,7 @@ Code-Checks:
 5. Docker run test and ZAP scan
    - Runs the Docker container to make sure it can launch successfully.
    - OWASP ZAP (Zed Attack Proxy) is an open-source web application DAST security scanner that identifies vulnerabilities and security issues by simulating attacks on web applications.
+
 <details>
   
 ```yml
@@ -1120,6 +1148,7 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 #### Get Github Tag
 
 - Fetch the latest tag from the github repo to be used as tags for container images.
+
 <details>
   
 ```yml
@@ -1149,7 +1178,9 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Docker Push
+
 - Use a github action ```docker/build-push-action@v6``` to build and push the container image to ghcr
+
 <details>
   
 ```yml
@@ -1185,8 +1216,10 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Create and apply secrets.yaml
+
 - Use a Github Personal Access Token(PAT) stored in Github Secrets to create a secrets.yaml file and apply it to the kubernetes cluster.
 - We can create a secret in each namespace with the same name ```ghcr-auth```. This makes is easy to pull the secret later for deployments to any namespace.
+
 <details>
   
 ```yml
@@ -1248,8 +1281,10 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Create and apply deployment.yaml
+
 - Create a deployment.yaml based on a template in github actions with substitutions for eks cluster name, region, namespace, image name, etc.
 - Apply the file to the kubernetes cluster.
+
 <details>
   
 ```yml
@@ -1324,8 +1359,10 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Create and apply service.yaml
+
 - Create a service.yaml file based on a template in github actions with substitutions for cluster, namespace, region and security group.
 - Apply the file to the kubernetes cluster.
+
 <details>
   
 ```yml
@@ -1398,9 +1435,11 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Create Route53 cname
+
 - Once the service is created and we get an External IP from the load balancer, we can create a Route53 CNAME on our hosted zone ```sctp-sandbox.com```.
 - We use awscli to get the Zone ID and to create the CNAME record.
 - We then check if the CNAME resource record was created successfully and if the dns resolution functions.
+
 <details>
   
 ```yml
@@ -1484,7 +1523,9 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Automerge to UAT branch (if push to dev)
+
 - After we have succesfully done all the above on the dev branch we can auto-merge dev to uat branch.
+
 <details>
   
 ```yml
@@ -1512,7 +1553,9 @@ Since we are using a kubernetes cluster, we will need to apply kubernetes secret
 </details>
 
 #### Advance github tag and release (if push to prod)
+
 - When we have successfully pushed a PR from uat to prod, we will advance the github tag and release.
+
 <details>
   
 ```yml
@@ -1591,15 +1634,16 @@ project-root/
 ```
 
 ## The Great Laugh - Joke Web Application
+
 Imagine a simple, fun, and engaging web application designed to deliver random jokes at the click of a button. Introducing The Great Laugh — a joke-sharing platform that’s not just about laughter but also showcases cutting-edge technology and serverless architecture.
 
 ### Main page
 
-![webappscreen](https://github.com/user-attachments/assets/1b0646b0-143e-441d-abb4-5ea9e6f8404d)
+![webappscreen](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone6.jpg)
 
 ### Joke Management Page
 
-![mgmtpage](https://github.com/user-attachments/assets/c0d5ce22-fb80-4512-95fb-d6539bee8b0e)
+![mgmtpage](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone7.jpg)
 
 ### Key Features
 
@@ -1610,6 +1654,7 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 - Joke Management Interface
 
 #### 2. A sleek and user-friendly interface allows users to:
+
 - Create new jokes.
 - Edit existing jokes.
 - Delete jokes they no longer find funny.
@@ -1617,23 +1662,24 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 ### Technologies Used
 
 #### 1. Frontend is built using:
-   
+
   - **Python**: Handles dynamic components of the application.
   - **JavaScript**: Powers interactivity like button clicks and API calls.
   - **HTML & CSS**: Provide a responsive and fun user interface.
   - The entire frontend runs in a **Docker container** for easy portability and scaling.
 
 #### 2. Backend (Serverless):
-   
-  The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with **GitHub Workflows** for continuous integration and deployment:
-  - **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
-  - **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
-  - **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+
+The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with **GitHub Workflows** for continuous integration and deployment:
+
+- **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
+- **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
+- **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
 
 #### 3. Build and Deployment
-   
-  - **Terraform**: Infrastructure as Code (IaC) is used to provision and configure serverless resources in AWS.
-  - **GitHub Workflows**: Automates the CI/CD pipeline, running Terraform scripts to deploy backend changes seamlessly upon code updates.
+
+- **Terraform**: Infrastructure as Code (IaC) is used to provision and configure serverless resources in AWS.
+- **GitHub Workflows**: Automates the CI/CD pipeline, running Terraform scripts to deploy backend changes seamlessly upon code updates.
 
 ### Web Application files/folder structures
 
@@ -1657,39 +1703,46 @@ Jokes-webapp-v2
 ```
 
 ## About AWS Serverless Tools
+
 AWS provides powerful services that enable developers to build scalable, cost-efficient, and serverless applications. Among these, API Gateway, AWS Lambda, Amazon DynamoDB, REST APIs, and IAM stand out as essential tools for modern cloud development.
 
-![APIG_tut_resources](https://github.com/user-attachments/assets/11e617c1-dbb4-4071-982e-ad49c57f02ea)
+![APIG_tut_resources](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone8.png)
 
 ## API Gateway
+
 AWS API Gateway acts as the front door for applications, enabling developers to design, deploy, and manage RESTful APIs without worrying about infrastructure. It integrates seamlessly with other AWS services like Lambda and DynamoDB, allowing you to build robust serverless applications. Key features include request transformation, traffic throttling, and built-in authentication mechanisms.
 
 ## REST API with API Gateway
+
 A REST API is an architectural style that allows applications to interact over HTTP using standard methods like GET, POST, and DELETE. AWS API Gateway makes creating REST APIs simple, acting as a bridge between clients and backends such as Lambda functions or DynamoDB tables.
 
-![API Gateway](https://github.com/user-attachments/assets/34db84b9-2c02-40c2-a648-d7f352de21c6)
+![API Gateway](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone9.jpg)
 
 ## AWS Lambda
+
 AWS Lambda is the backbone of serverless computing in AWS. It allows you to run code in response to triggers such as HTTP requests, database events, or changes in data streams. With Lambda, there’s no need to manage servers; AWS automatically handles scaling, making it ideal for lightweight, event-driven workloads.
 
-![lambda](https://github.com/user-attachments/assets/c50afced-1b6c-45d8-9c76-d232076276a4)
+![lambda](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone10.jpg)
 
 ## Amazon DynamoDB
+
 A fully managed NoSQL database, Amazon DynamoDB is designed for high availability, low latency, and automatic scaling. It supports both key-value and document data models, making it a go-to choice for serverless architectures. DynamoDB works exceptionally well for real-time applications like gaming leaderboards, IoT systems, and e-commerce platforms.
 
-![dynamodb](https://github.com/user-attachments/assets/363486f5-cd0a-4b62-8629-160f16c97d0d)
+![dynamodb](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone11.png)
 
 ## IAM (Identity and Access Management)
+
 AWS IAM secures access to resources in your AWS environment. It lets you create users, roles, and policies to control who can access what. For serverless architectures, IAM ensures that services like API Gateway and Lambda interact securely with DynamoDB or other resources, following the principle of least privilege.
 
-![IamPolicy](https://github.com/user-attachments/assets/a65c7531-68dd-47fe-915e-1b19a722ddad)
+![IamPolicy](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone12.jpg)
 
 ## Project Management and Future Areas for Improvement
-A simple **Jira Kanban Board** was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project. 
+
+A simple **Jira Kanban Board** was used to help us keep track of tasks progress. We have also added in potential areas for improvements for this project.  
 
 https://tanlye.atlassian.net/jira/software/projects/CE7/boards/1?atlOrigin=eyJpIjoiOWY0ZmFhMmE5OTFkNGEyZGI3OTI2YzQyMDNkMGEwYmEiLCJwIjoiaiJ9
 
-![image](https://github.com/user-attachments/assets/4ad406bf-9eba-4ca7-bdb1-7877a11ff899)
+![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone13.png)
 
 
 ## References
