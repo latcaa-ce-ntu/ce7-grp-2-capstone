@@ -59,6 +59,8 @@ resource "aws_iam_role_policy_attachment" "attach_policy" {
   policy_arn = aws_iam_policy.jokes_policy.arn
 }
 
+# # ----------------------------------------------------------------------------------------------------
+
 # Summary
 
 # Creates IAM role and policy for Lambda to interact with DynamoDB and CloudWatch logs.

@@ -1,0 +1,13 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "eks.amazonaws.com",
+        "AWS": "arn:aws:iam::255945442255:user/alan1237"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}

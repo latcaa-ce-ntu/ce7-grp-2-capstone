@@ -21,6 +21,8 @@ module "eks" {
   depends_on = [module.network]
 }
 
+# # ----------------------------------------------------------------------------------------------------
+
 # Infrastructure Overview:
 #
 # 1. Network Module:
