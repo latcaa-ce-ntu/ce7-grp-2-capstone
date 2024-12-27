@@ -1642,6 +1642,7 @@ project-root/
 
 ![Screenshot 2024-12-27 141543](https://github.com/user-attachments/assets/d4b44230-00b4-4ffb-9066-7530914e4b4f)
 
+[Watch Health Care Advisor Demo Video](https://drive.google.com/file/d/1iKSBZfRZptc52vxu3ImMjSprXQKeE8fi/view?usp=sharing)
 
 ### Key Features of Health Care Advisor
 
