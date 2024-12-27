@@ -12,8 +12,8 @@
 
 ## Project Objectives
 
-1. Create a simple Web App that allows users to read new jokes with each click of a button. 
-2. Containerize the Web App and dependencies using Docker. Store Jokes database in AWS DynamoDB with Joke generation using AWS Lambda function.
+1. Create a simple Web App to show some tips information related to health. 
+2. Containerize the Web App and dependencies using Docker. Store health content in AWS DynamoDB and retrieve it using AWS Lambda function.
 3. Build AWS infrastructure using Terraform
 4. Implement CI/CD pipeline using Github Actions to build infrastructure, perform relevant tests on Terraform code/k8s files/Web App python code/Dockerfiles and automate deployment from testing to live environment.
 5. Use AWS EKS as the container orchestration platform
@@ -817,7 +817,7 @@ Our terraform CD workflow only consists of one step since all the checks have be
 
 ### Docker CI
 
-Docker and application files are stored in their own directory in the repo. `jokes-webapp-v#` in this instance.
+Docker and application files are stored in their own directory in the repo. `health_care_advisor` in this instance.
 We have tried to design the workflow to be app agnostic. Currently, these workflows will work with both js and python projects.
 Adopting a shift-left security approach, we implement the following checks for our Docker CI workflow.
 We also have Sonarqube integrated into our repo so it runs code scans on the repo as well as every pull request.
@@ -1622,10 +1622,11 @@ project-root/
 ├── iam.tf                            # IAM role/policy for Lambda to access DynamoDB and CloudWatch.
 ├── network.tf                        # Security groups and networking configurations.
 ├── container-definitions.json        # ECS task container definitions file (if needed)
-├── ce7-grp-2-jokes-lambda.zip        # A ZIP file containing the Lambda function code. 
+├── ce7-grp-2-hca-lambda.zip          # A ZIP file containing the Lambda function code to call Method.
+├── ce7-grp-2-hca-insert-records.zip  # A ZIP file containing the Lambda function code to insert content records. 
 ├── dynamodb.tf                       # DynamoDB table setup
-├── lambda.tf                         # Creates Lambda function for jokes service with Python, IAM, and DynamoDB integration.
-├── webapi_gtw.tf                     # Sets up an API Gateway with Lambda integration for CRUD operations on a jokes service.  
+├── lambda.tf                         # Creates Lambda function for health care advisor service with Python, IAM, and DynamoDB integration.
+├── webapi_gtw.tf                     # Sets up an API Gateway with Lambda integration.  
 ├── README.md                         # Documentation for the setup and usage
 │
 ├── dev.tfvars                        # Not utilised - Development settings 
@@ -1633,31 +1634,31 @@ project-root/
 └── prod.tfvars                       # Not utilised - Production settings
 ```
 
-## The Great Laugh - Joke Web Application
+## Health Care Advisor (Web Application)
 
-Imagine a simple, fun, and engaging web application designed to deliver random jokes at the click of a button. Introducing The Great Laugh — a joke-sharing platform that’s not just about laughter but also showcases cutting-edge technology and serverless architecture.
+**Health Care Advisor** is a comprehensive and interactive web application designed to help users understand and improve their health through personalized guidance on managing chronic diseases, engaging in physical activities, and adopting healthy dietary habits. For chronic conditions like Blood Pressure, Diabetes, and Heart Health, the app offers practical tips such as monitoring vital metrics, reducing salt or sugar intake, and maintaining an active lifestyle. Users can explore diverse physical activities like walking, yoga, or strength training to enhance fitness and prevent health risks. Additionally, the app provides valuable diet tips, emphasizing the importance of whole foods, portion control, hydration, and minimizing processed foods. By combining expert insights with actionable recommendations, Health Care Advisor empowers individuals to take charge of their well-being and live healthier, more balanced lives.
 
-### Main page
+### Home page
 
-![webappscreen](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone6.jpg)
+![Screenshot 2024-12-27 141543](https://github.com/user-attachments/assets/d4b44230-00b4-4ffb-9066-7530914e4b4f)
 
-### Joke Management Page
 
-![mgmtpage](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone7.jpg)
+### Key Features of Health Care Advisor
 
-### Key Features
+1. Chronic Disease Management
 
-#### 1. Random Joke Generator
+  * Tailored tips for managing conditions like Blood Pressure, Diabetes, and Heart Health.
+  * Easy-to-follow advice on monitoring health metrics and lifestyle adjustments.
 
-- Click a button to fetch a random joke from a dynamic pool of jokes.
-- Each joke is retrieved through serverless APIs backed by AWS tools.
-- Joke Management Interface
+2. Physical Activity Recommendations
 
-#### 2. A sleek and user-friendly interface allows users to:
+  * Suggestions for various exercises like walking, yoga, cycling, and strength training.
+  * Detailed benefits of each activity to encourage an active lifestyle.
 
-- Create new jokes.
-- Edit existing jokes.
-- Delete jokes they no longer find funny.
+3. Dietary Guidance
+
+  * Nutritional tips such as eating whole foods, staying hydrated, and controlling portion sizes.
+  * Insights on healthy fats, lean proteins, and minimizing processed foods for better health.
 
 ### Technologies Used
 
@@ -1672,9 +1673,9 @@ Imagine a simple, fun, and engaging web application designed to deliver random j
 
 The backend is built using **AWS serverless services**, deployed and managed through **Terraform** and automated with **GitHub Workflows** for continuous integration and deployment:
 
-- **API Gateway**: Exposes RESTful endpoints for joke-related operations (**Create**, **Read**, **Update**, **Delete**).
-- **AWS Lambda Function**: Executes backend logic such as fetching a random joke or updating the database.
-- **Amazon DynamoDB**: Stores all jokes in a NoSQL database, ensuring fast retrieval and scalability.
+- **API Gateway**: Exposes RESTful endpoints to retrieve content for Health Care Advisor.
+- **AWS Lambda Function**: Executes backend logic such as fetching a content from the database.
+- **Amazon DynamoDB**: Stores all the content in a NoSQL database, ensuring fast retrieval and scalability.
 
 #### 3. Build and Deployment
 
@@ -1684,22 +1685,22 @@ The backend is built using **AWS serverless services**, deployed and managed thr
 ### Web Application files/folder structures
 
 ```sh
-Jokes-webapp-v2
-├── static            # This directory contains static assets that are served directly to the client.		
-│   ├── joke.png      # The image associated with the jokes (can be displayed in the frontend).
-│   ├── styles.css    # The CSS file to style the webpage.
+health_care_advisor
+├── app                     # Application folder contain css, images, javascript, html, environment and python program.
+│   ├── static              # This directory contains static assets that are served directly to the client.
+│   │   ├──css
+│   │   │   └── styles.css  # The CSS file to style the webpage.
+│   │   ├──img              # The img folder contain all the images associated with the health care advisor.
+│   │   ├──js
+│   │   │    └──script.js   # contain all the javascript code.    
+│   │   ├── templates       # This directory holds the HTML templates used by the Flask application.
+│   │   │   └── index.html  # The main page of the application, which displays health care advisor content.
+│   ├── .env                # A file containing environment variables used by the application.
+│   └── app.py              # The main entry point of the Flask application. (defines the routes and logic).
 │
-├── templates         # This directory holds the HTML templates used by the Flask application.
-│   ├── index.html    # The main page of the application, which displays jokes.
-│   ├── mgmt.html     # A management page, possibly for admin use to control the jokes.
-│
-├── .dockerignore     # Defines which files and directories should be excluded when building the Docker image.	
-├── .env              # A file containing environment variables used by the application.
-├── app.py            # The main entry point of the Flask application. (defines the routes and logic).
-├── Dockerfile        # The file that contains instructions for building the Docker image.
-├── jokes_setting.py  # Configuration settings related to how jokes are stored or fetched.
-├── jokes_webapp.py   # A file containing the core logic of serving jokes to the user.
-└── requirements.txt  # A file listing the Python dependencies required for the application.
+├── docker-compose.yml      # To define and manage multi-container docker applications.
+├── Dockerfile              # The file that contains instructions for building the Docker image.
+└── requirements.txt        # A file listing the Python dependencies required for the application.
 ```
 
 ## About AWS Serverless Tools
@@ -1716,19 +1717,19 @@ AWS API Gateway acts as the front door for applications, enabling developers to 
 
 A REST API is an architectural style that allows applications to interact over HTTP using standard methods like GET, POST, and DELETE. AWS API Gateway makes creating REST APIs simple, acting as a bridge between clients and backends such as Lambda functions or DynamoDB tables.
 
-![API Gateway](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone9.jpg)
+![Screenshot 2024-12-27 141957](https://github.com/user-attachments/assets/710d1cdf-a4b4-478f-ae95-b0caa09b2a90)
 
 ## AWS Lambda
 
 AWS Lambda is the backbone of serverless computing in AWS. It allows you to run code in response to triggers such as HTTP requests, database events, or changes in data streams. With Lambda, there’s no need to manage servers; AWS automatically handles scaling, making it ideal for lightweight, event-driven workloads.
 
-![lambda](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone10.jpg)
+![Screenshot 2024-12-27 142107](https://github.com/user-attachments/assets/9bf1fb61-3cbd-44ef-bc1b-0952343a37bc)
 
 ## Amazon DynamoDB
 
 A fully managed NoSQL database, Amazon DynamoDB is designed for high availability, low latency, and automatic scaling. It supports both key-value and document data models, making it a go-to choice for serverless architectures. DynamoDB works exceptionally well for real-time applications like gaming leaderboards, IoT systems, and e-commerce platforms.
 
-![dynamodb](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone11.png)
+![Screenshot 2024-12-27 142226](https://github.com/user-attachments/assets/39f466e4-ff55-4a0b-944a-0ebde2fccf7c)
 
 ## IAM (Identity and Access Management)
 
