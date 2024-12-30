@@ -1,0 +1,20 @@
+1. Run terraform code using github workflow to Setup API Gateway, lambda Function, DynamoDB, IAM and S3.
+
+2. Once API Gateway is setup, we need to update rest API endpoint to source code under .env file. Get from api url from AWS Console->API Gatway->stages, paste to .env (health_care_advisor\app\.env). 
+	
+	Invoke URL format = https://{api-id}.execute-api.{region}.amazonaws.com/{stage-name}/{path name}
+	
+	Example: https://65ppsmv66c.execute-api.us-east-1.amazonaws.com/dev/hca
+	
+3. Insert default data using lambda function in Dynamodb (AWS Console)
+	Go to aws console lambda function choose : ce7-grp-2-hca-insert-records
+	Create a test Event name : Insert data
+	Set Event Json content to {}
+	Run the test, successfully insert will return 200, check on dynamodb tables.
+
+4. Run the github workflow deployemnt to DEV/UAT/PROD, build the docker using below command.
+	
+	docker-compose up --build
+
+5. You should able to see the HCA web application with port 5000.
+	
