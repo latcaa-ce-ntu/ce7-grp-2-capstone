@@ -8,7 +8,8 @@ terraform {
   # }
 
   backend "s3" {
-    bucket         = "sctp-ce7-tfstate-new"
+    # bucket         = "sctp-ce7-tfstate-new"
+    bucket         = "sctp-ce9-tfstate"
     key            = "terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "terraform-state-lock"
