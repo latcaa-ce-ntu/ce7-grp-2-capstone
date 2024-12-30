@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title_name }}</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+  <link href="static/css/style.css" rel="stylesheet" />
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
+
+    <div class="container-fluid">
+      <div class="title-name">
+        {{ title_name }}
+      </div>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#tips-section1">Chronic Disease </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#phy-activity-section">Physical Activity </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="#diet-tips-section">Diet Tips </a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="slides" class="carousel slide" data-ride="carousel">
+    <ul class="carousel-indicators">
+      <li data-target="#slides" data-slide-to="0" class="active"></li>
+      <li data-target="#slides" data-slide-to="1"></li>
+      <li data-target="#slides" data-slide-to="2"></li>
+    </ul>
+    <div class="carousel-inner">
+      <div class="carousel-item active"><img src="static/img/gif/bg1.jpg" /></div>
+      <div class="carousel-item"><img src="static/img/gif/bg2.jpg" /></div>
+      <div class="carousel-item"><img src="static/img/gif/bg3.jpg" /></div>
+    </div>
+  </div>
+
+  <div id="tips-section1">
+    <main>
+      <h1>Chronic Disease</h1>
+      <div id="categories" class="category-container"></div>
+      <div id="tips" class="tips-container"></div>
+    </main>
+  </div>
+
+  <a href="#" class="brn btn-primary back-to-top">Back to Top</a>
+
+  <div id="phy-activity-section">
+    <h1>Physical Activities</h1>
+    <div id="phy-activity-list" class="activity-cards-container"></div>
+  </div>
+
+
+  <div id="diet-tips-section" class="diet-tips-box">
+    <h1>Diet Tips</h1>
+    <ul id="diet-tips-list" class="accordion"></ul>
+  </div>
+
+  <footer class="footer-section">
+    <div class="footer-content">
+      <span class="project-name">Capstone Project:</span>
+      <span class="project-title">{{ title_name }}</span>
+      <span class="group-info">| Group: CE7 Group 2</span>
+    </div>
+    <div class="team-members">
+      <strong>Team Members:</strong> Azmin, Alan, TeckChoy, Lovell, Andy
+    </div>
+  </footer>
+
+  <script src="/static/js/script.js"></script>
+</body>
+
+</html>

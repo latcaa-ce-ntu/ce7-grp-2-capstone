@@ -69,30 +69,51 @@ variable "name_prefix" {
 # ----------------------------------------------------------------------------
 
 # ---------------------------------------------------
-# For Dynamodb 
+# For Dynamodb - Jokes
+# ---------------------------------------------------
+# variable "dynamodb_table_name" {
+#   description = "dynamodb table name"
+#   type        = string
+#   default     = "jokes-db-v2"
+# }
+
+# ---------------------------------------------------
+# For Dynamodb - HCA
 # ---------------------------------------------------
 variable "dynamodb_table_name" {
   description = "dynamodb table name"
   type        = string
-  # default     = "ce7-grp-2-jokes-db-v2"
-  default = "jokes-db-v2"
+  default     = "hca-db"
 }
 
 # ---------------------------------------------------
-# For Lambda function
+# For Lambda function - Jokes
+# ---------------------------------------------------
+# variable "lambda_function_name" {
+#   description = "lambda function name"
+#   type        = string
+#   default     = "jokes-lambda-v2"
+# }
+
+# variable "lambda_file_name" {
+#   description = "lambda file name"
+#   type        = string
+#   default     = "jokes-lambda"
+# }
+
+# ---------------------------------------------------
+# For Lambda function - HCA
 # ---------------------------------------------------
 variable "lambda_function_name" {
   description = "lambda function name"
   type        = string
-  default     = "jokes-lambda-v2"
-  # default     = "ce7-grp-2-jokes-lambda-v2"
+  default     = "hca-lambda"
 }
 
-variable "lambda_file_name" {
-  description = "lambda file name"
+variable "insert_record_lambda" {
+  description = "insert records lambda function"
   type        = string
-  default     = "jokes-lambda"
-  # default     = "ce7-grp-2-jokes-lambda-v2"
+  default     = "hca-insert-records"
 }
 
 variable "python_version" {
@@ -102,31 +123,53 @@ variable "python_version" {
 }
 
 # ---------------------------------------------------
-# For IAM
+# For IAM - Jokes
 # ---------------------------------------------------
-variable "jokes_execution_role_name" {
-  description = "Jokes execution role name"
-  type        = string
-  default     = "jokes-execution-role-v2"
-  # default     = "ce7-grp-2-jokes-execution-role-v2"
-}
+# variable "jokes_execution_role_name" {
+#   description = "Jokes execution role name"
+#   type        = string
+#   default     = "jokes-execution-role-v2"
+# }
 
-variable "jokes_policy_name" {
-  description = "Jokes policy name"
-  type        = string
-  default     = "jokes-policy-v2"
-  # default     = "ce7-grp-2-jokes-policy-v2"
-}
+# variable "jokes_policy_name" {
+#   description = "Jokes policy name"
+#   type        = string
+#   default     = "jokes-policy-v2"
+# }
 
 # ---------------------------------------------------
-# For API GAteway
+# For IAM - HCA
+# ---------------------------------------------------
+variable "hca_execution_role_name" {
+  description = "hca execution role name"
+  type        = string
+  default     = "hca-execution-role"
+}
+
+variable "hca_policy_name" {
+  description = "hca policy name"
+  type        = string
+  default     = "hca-policy"
+}
+
+# ---------------------------------------------------
+# For API Gateway - Jokes
+# ---------------------------------------------------
+
+# variable "rest_api_name" {
+#   description = "Rest API name"
+#   type        = string
+#   default     = "jokes-restapi-v2"
+# }
+
+# ---------------------------------------------------
+# For API Gateway - HCA
 # ---------------------------------------------------
 
 variable "rest_api_name" {
   description = "Rest API name"
   type        = string
-  default     = "jokes-restapi-v2"
-  # default     = "ce7-grp-2-jokes-restapi-v2"
+  default     = "hca-restapi"
 }
 
 variable "rest_api_description" {

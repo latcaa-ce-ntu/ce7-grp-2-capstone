@@ -1,11 +1,72 @@
 # ---------------------------------------------------
-# IAM Configuration for Lambda and DynamoDB
+# IAM Configuration for Lambda and DynamoDB - Jokes
 # ---------------------------------------------------
 
-#  Define the jokes execution role
-resource "aws_iam_role" "jokes_execution_role" {
-  # name = var.jokes_execution_role_name
-  name = "${var.name_prefix}-${var.jokes_execution_role_name}"
+# #  Define the jokes execution role
+# resource "aws_iam_role" "jokes_execution_role" {
+#   # name = var.jokes_execution_role_name
+#   name = "${var.name_prefix}-${var.jokes_execution_role_name}"
+
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = "sts:AssumeRole"
+#         Effect = "Allow"
+#         Principal = {
+#           Service = "lambda.amazonaws.com"
+#         }
+#       }
+#     ]
+#   })
+# }
+
+# #  Define the jokes policy 
+# resource "aws_iam_policy" "jokes_policy" {
+#   # name = var.jokes_policy_name
+#   name = "${var.name_prefix}-${var.jokes_policy_name}"
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = [
+#           "dynamodb:GetItem",
+#           "dynamodb:PutItem",
+#           "dynamodb:UpdateItem",
+#           "dynamodb:DeleteItem",
+#           "dynamodb:Scan",
+#           "dynamodb:Query"
+#         ]
+#         Effect   = "Allow"
+#         Resource = aws_dynamodb_table.jokes_table.arn
+#       },
+#       {
+#         Action = [
+#           "logs:CreateLogGroup",
+#           "logs:CreateLogStream",
+#           "logs:PutLogEvents"
+#         ]
+#         Effect   = "Allow"
+#         Resource = "arn:aws:logs:*:*:*"
+#       }
+#     ]
+#   })
+# }
+
+# resource "aws_iam_role_policy_attachment" "attach_policy" {
+#   role       = aws_iam_role.jokes_execution_role.name
+#   policy_arn = aws_iam_policy.jokes_policy.arn
+# }
+
+# ---------------------------------------------------
+# IAM Configuration for Lambda and DynamoDB - HCA
+# ---------------------------------------------------
+
+#  Define the hca execution role
+resource "aws_iam_role" "hca_execution_role" {
+
+  name = "${var.name_prefix}-${var.hca_execution_role_name}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,10 +82,10 @@ resource "aws_iam_role" "jokes_execution_role" {
   })
 }
 
-#  Define the jokes policy 
-resource "aws_iam_policy" "jokes_policy" {
-  # name = var.jokes_policy_name
-  name = "${var.name_prefix}-${var.jokes_policy_name}"
+#  Define the hca policy 
+resource "aws_iam_policy" "hca_policy" {
+
+  name = "${var.name_prefix}-${var.hca_policy_name}"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -39,7 +100,7 @@ resource "aws_iam_policy" "jokes_policy" {
           "dynamodb:Query"
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.jokes_table.arn
+        Resource = aws_dynamodb_table.hca_table.arn
       },
       {
         Action = [
@@ -55,9 +116,10 @@ resource "aws_iam_policy" "jokes_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "attach_policy" {
-  role       = aws_iam_role.jokes_execution_role.name
-  policy_arn = aws_iam_policy.jokes_policy.arn
+  role       = aws_iam_role.hca_execution_role.name
+  policy_arn = aws_iam_policy.hca_policy.arn
 }
+
 
 # # ----------------------------------------------------------------------------------------------------
 

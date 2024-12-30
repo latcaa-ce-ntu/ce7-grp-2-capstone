@@ -1,0 +1,473 @@
+@import url("https://fonts.googleapis.com/css?family=Poppins:400,500,700");
+
+.title-name {
+  font-family: Arial, sans-serif;
+  font-size: 38px;
+  font-weight: bold;
+  color: #2a9d8f;
+  text-align: start;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  width: auto;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+  color: #222;
+}
+
+:root {
+  --primary-green: #379e43;
+  --primary-blue: #007faf;
+  --secondary-light-green: #dff7df;
+  --secondary-white: #ffffff;
+  --text-dark: #333333;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  color: var(--primary-green);
+}
+
+button {
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  background-color: var(--primary-blue);
+  color: var(--secondary-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--primary-green);
+}
+
+/* ----- Navigation ----- */
+
+.navbar {
+  padding: 0.8rem;
+}
+
+.navbar-nav li {
+  padding-right: 20px;
+}
+
+.nav-link {
+  font-size: 1.1em !important;
+}
+
+/* ----- Carousel Images ----- */
+
+.carousel-inner img {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+}
+
+.carousel-caption {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.carousel-caption h1 {
+  font-size: 500%;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 10px #000;
+}
+
+.carousel-caption h3 {
+  font-size: 200%;
+  font-weight: 500;
+  text-shadow: 1px 1px 10px #000;
+  padding-bottom: 1rem;
+}
+
+/* ----- Back to top button ----- */
+
+.btn-primary {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  /* background-color: #40920a; */
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 30px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  /* background-color: #5e9e36; */
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary:active {
+  background-color: #f9f9fa;
+  transform: translateY(1px);
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+
+.back-to-top::before {
+  content: "↑ ";
+  font-size: 18px;
+}
+
+/* ----- Carousel ----- */
+
+@media (max-width: 768px) {
+  .carousel-caption {
+    top: 45%;
+  }
+
+  .carousel-caption h1 {
+    font-size: 350%;
+  }
+  .carousel-caption h3 {
+    font-size: 140%;
+    font-weight: 400;
+    padding-bottom: 0.2rem;
+  }
+
+  carousel-caption .btn {
+    font-size: 95%;
+    padding: 8px 14px;
+  }
+
+  .display-4 {
+    font-size: 200%;
+  }
+
+  .social a {
+    font-size: 2.5em;
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .carousel-caption {
+    top: 40%;
+  }
+
+  .carousel-caption h1 {
+    font-size: 250%;
+  }
+  .carousel-caption h3 {
+    font-size: 110%;
+  }
+  .carousel-caption .btn {
+    font-size: 90%;
+    padding: 4px 8px;
+  }
+
+  .carousel-indicators {
+    display: none;
+  }
+
+  .display-4 {
+    font-size: 160%;
+  }
+  .social a {
+    font-size: 2em !important;
+    padding: 0.7em !important;
+  }
+}
+
+.carousel-item {
+  transition: -webkit-transform 0.5s ease;
+  transition: transform 0.5s ease;
+  transition: transform 0.5s ease, -webkit-transform 0.5s ease;
+  -webkit-backface-visibility: visible;
+  backface-visibility: visible;
+}
+
+/* ----- Chronic Disease ----- */
+
+.category-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.tips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  /* margin-top: 20px; */
+  background-color: #b2f2f7;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.5);
+  /* border-radius: 10px; */
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.card {
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 200px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+}
+
+.card h3 {
+  margin: 0;
+  color: #007bff;
+}
+
+.tips {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+main {
+  flex-grow: 1;
+  padding: 20px;
+  text-align: center;
+}
+
+#slides {
+  position: relative;
+  z-index: 1;
+}
+
+a {
+  text-decoration: none;
+  color: #ffffff;
+}
+
+a:hover {
+  color: #1abc9c;
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav ul {
+    flex-direction: column;
+    padding-left: 0;
+  }
+
+  footer {
+    padding: 20px 10px;
+  }
+}
+
+/* ----- Physical Activities ----- */
+
+#phy-activity-section {
+  padding: 40px;
+  background-color: #f0f8ff;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#phy-activity-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.activity-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.activity-card h3 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.activity-card p {
+  font-size: 1rem;
+  color: #555;
+}
+
+.activity-card .activity-icon {
+  font-size: 3rem;
+  color: #00aaff;
+  margin-bottom: 10px;
+}
+
+/* ----- Diets Tips ----- */
+
+.diet-tips-box {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 2px solid #007bff;
+  border-radius: 10px;
+  background-color: #fefefe;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.accordion {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.accordion li {
+  border-bottom: 1px solid #ddd;
+}
+
+.accordion li:last-child {
+  border-bottom: none;
+}
+
+.accordion .title {
+  padding: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #007bff;
+  cursor: pointer;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.3s;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.accordion .title:hover {
+  background-color: #f1f1f1;
+}
+
+.accordion .chevron {
+  font-size: 1rem;
+  transition: transform 0.3s;
+}
+
+.accordion .title.open .chevron {
+  transform: rotate(180deg);
+}
+
+.accordion .description {
+  display: none;
+  padding: 15px;
+  font-size: 1rem;
+  color: white;
+  background-color: #57ce93;
+  border-radius: 5px;
+  margin-top: -5px;
+  margin-bottom: 10px;
+  line-height: 1.6;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ----- Footer ----- */
+
+.footer-section {
+  background-color: #4b8dd4;
+  color: white;
+  padding: 20px 20px;
+  text-align: center;
+  border-top: 2px solid #0056b3;
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+}
+
+.footer-content {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.project-name {
+  color: #cbe2f1;
+}
+
+.project-title {
+  font-style: italic;
+}
+
+.group-info {
+  font-size: 1rem;
+  color: #cbe2f1;
+}
+
+.team-members {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #e3f2fd;
+}
+
+@media (max-width: 768px) {
+  .footer-section {
+    text-align: left;
+    padding: 15px;
+  }
+
+  .footer-content,
+  .team-members {
+    font-size: 0.9rem;
+  }
+}
+
+/* ----- End ----- */
