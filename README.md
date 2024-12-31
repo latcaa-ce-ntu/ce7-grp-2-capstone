@@ -1643,6 +1643,8 @@ project-root/
 
 [Watch Health Care Advisor Demo Video](https://drive.google.com/file/d/1iKSBZfRZptc52vxu3ImMjSprXQKeE8fi/view?usp=sharing)
 
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/nyYlBen2mdY/0.jpg)](https://www.youtube.com/watch?v=nyYlBen2mdY)
+
 ### Key Features of Health Care Advisor
 
 1. Chronic Disease Management
