@@ -12,11 +12,11 @@
 
 ## Project Objectives
 
-1. Create a simple Web App to show some tips information related to health. 
-2. Containerize the Web App and dependencies using Docker. Store health content in AWS DynamoDB and retrieve it using AWS Lambda function.
-3. Build AWS infrastructure using Terraform
-4. Implement CI/CD pipeline using Github Actions to build infrastructure, perform relevant tests on Terraform code/k8s files/Web App python code/Dockerfiles and automate deployment from testing to live environment.
-5. Use AWS EKS as the container orchestration platform
+1. Build a health tips/information Web Application
+2. Containerize Web App using Docker. Store content in AWS DynamoDB and access via AWS Lambda.
+3. Deploy AWS infrastructure using Terraform
+4. Implement CI/CD pipeline using Github Actions by building infrastructure, conduct tests on Terraform, k8s, Python code and Dockerfiles. Automate deployment from test to production
+5. Deploy to AWS EKS for container orchestration
 
 ## Architecture Diagram
 
@@ -25,8 +25,7 @@
 ## Dev/UAT/Prod Github Branch strategy  
 
 ![git branch2](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone2.jpg)
-
-<sub>Image from Valaxy Technologies.</sub>
+Image from Valaxy Technologies.  
 
 ### Pros and Cons of Dev/UAT/Prod Branch Strategy  
 
@@ -76,8 +75,8 @@ The following branch security was implemented to ensure the integrity of the rep
 
 ## OpenID Connect (OIDC)  
 
-
 ### Advantages
+
 **GitHub OpenID Connect (OIDC)** allows GitHub Actions to authenticate with cloud providers securely. Rather than storing a permanent AWS access key ID and secret access key, OIDC enables use of temporary credentials to access AWS.
 ![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone4.png)
 
@@ -95,10 +94,10 @@ GitHub OpenID Connect (OIDC) offers several advantages for CI/CD workflows:
     - OIDC supports multiple cloud providers, allowing teams to deploy applications without changing authentication methods.  
 6. **Better Compliance with Security Standards**  
     - Adopting OIDC helps organizations align with security best practices, minimizing the use of long-lived credentials.  
+  
+### Summary
 
-### Conclusion
-
-OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow. 
+OIDC eliminates the need for all team members to share a set of access keys/credentials and reduces access management workload. Hence we chose to integrate OIDC in our workflow.  
 Potential areas for improvement: Restrict Access to different resources created based on specific user roles (IAM) that authenticate using OIDC.
 
 ### Implementation
@@ -215,7 +214,7 @@ By default, 2 worker nodes are running at all times to ensure steady performance
     desired_size = 2 # Normal running nodes
     max_size     = 3 # Maximum during high load
     min_size     = 1 # Minimum to maintain
-  }
+    }
 ```
 
 </details>
@@ -1745,7 +1744,6 @@ A simple **Jira Kanban Board** was used to help us keep track of tasks progress.
 https://tanlye.atlassian.net/jira/software/projects/CE7/boards/1?atlOrigin=eyJpIjoiOWY0ZmFhMmE5OTFkNGEyZGI3OTI2YzQyMDNkMGEwYmEiLCJwIjoiaiJ9
 
 ![image](https://github.com/latcaa-ce-ntu/ce7-grp-2-resources/blob/main/screenshot/capstone13.png)
-
 
 ## References
 
